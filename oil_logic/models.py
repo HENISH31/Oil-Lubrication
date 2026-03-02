@@ -18,6 +18,7 @@ class Oil(models.Model):
     change_interval_km = models.IntegerField(default=5000)
     change_interval_months = models.IntegerField(default=6)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    volume_liters = models.FloatField(default=1.0, help_text="Volume in Liters")
     image_url = models.URLField(max_length=500, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     stock_count = models.IntegerField(default=100)
@@ -69,6 +70,25 @@ class VehicleRegistration(models.Model):
         return f"{self.license_plate} - {self.vehicle}"
 
 class Maintenance(models.Model):
+    DRIVING_CONDITIONS = [
+        ('City', 'City/Traffic'),
+        ('Highway', 'Highway/Long Drive'),
+        ('Mixed', 'Mixed (Both)'),
+        ('Off-road', 'Off-road/Rough terrain'),
+    ]
+    MILEAGE_RANGES = [
+        ('0-50k', '0-50,000 km'),
+        ('50k-100k', '50,001-1,00,000 km'),
+        ('100k-150k', '1,00,001-1,50,000 km'),
+        ('Above-150k', 'Above 1,50,000 km'),
+    ]
+    OIL_CHANGE_FREQUENCIES = [
+        ('3-4m', 'Every 3-4 months'),
+        ('5-6m', 'Every 5-6 months'),
+        ('12m', 'Every 12 months'),
+        ('Manufacturer', 'As per manufacturer only'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='maintenance_records')
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     license_plate = models.CharField(max_length=20, blank=True, null=True)
@@ -77,6 +97,11 @@ class Maintenance(models.Model):
     last_oil_change_date = models.DateField(default=timezone.now)
     next_due_km = models.IntegerField(blank=True, null=True)
     next_due_date = models.DateField(blank=True, null=True)
+    
+    # New fields for recommendation logic
+    driving_condition = models.CharField(max_length=20, choices=DRIVING_CONDITIONS, default='Mixed')
+    mileage_range = models.CharField(max_length=20, choices=MILEAGE_RANGES, default='0-50k')
+    preferred_frequency = models.CharField(max_length=20, choices=OIL_CHANGE_FREQUENCIES, default='5-6m')
 
     def save(self, *args, **kwargs):
         if not self.next_due_km:

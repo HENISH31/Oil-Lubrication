@@ -1,14 +1,15 @@
 {% extends 'oil_logic/base.html' %}
 
 {% block content %}
-<section class="max-w-4xl mx-auto px-6 py-12 min-h-[80vh] flex flex-col items-center justify-center">
+<input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+<section class="max-w-4xl mx-auto px-6 py-12 min-h-[80vh] flex flex-col items-center">
     <!-- Stepper Progress -->
     <div id="stepper" class="w-full max-w-2xl mb-12 flex justify-between items-center relative">
         <div class="absolute top-1/2 left-0 w-full h-0.5 bg-white/5 -translate-y-1/2 z-0"></div>
         <div id="step-progress"
             class="absolute top-1/2 left-0 w-0 h-0.5 bg-red-500 -translate-y-1/2 z-0 transition-all duration-500"></div>
 
-        <div class="step-item relative z-10 flex flex-col items-center gap-2 group active">
+        <div class="step-item relative z-10 flex flex-col items-center gap-2 group">
             <div
                 class="w-10 h-10 rounded-full bg-[#0A0A0A] border-2 border-white/10 flex items-center justify-center group-[.active]:border-red-500 group-[.active]:text-red-500 transition-all font-bold">
                 1</div>
@@ -27,12 +28,19 @@
                 class="w-10 h-10 rounded-full bg-[#0A0A0A] border-2 border-white/10 flex items-center justify-center group-[.active]:border-red-500 group-[.active]:text-red-500 transition-all font-bold">
                 3</div>
             <span
+                class="text-[10px] font-black uppercase tracking-widest text-gray-500 group-[.active]:text-white">Usage</span>
+        </div>
+        <div class="step-item relative z-10 flex flex-col items-center gap-2 group">
+            <div
+                class="w-10 h-10 rounded-full bg-[#0A0A0A] border-2 border-white/10 flex items-center justify-center group-[.active]:border-red-500 group-[.active]:text-red-500 transition-all font-bold">
+                4</div>
+            <span
                 class="text-[10px] font-black uppercase tracking-widest text-gray-500 group-[.active]:text-white">Result</span>
         </div>
     </div>
 
     <!-- Wizard Container -->
-    <div class="w-full">
+    <div class="w-full max-w-4xl">
         <!-- Step 1: Vehicle Type -->
         <div id="wizard-step-1" class="wizard-step space-y-8 animate-in fade-in slide-in-from-bottom-5">
             <div class="text-center">
@@ -109,15 +117,70 @@
                 <div class="flex flex-col md:flex-row gap-4 pt-6">
                     <button onclick="nextStep(1)"
                         class="w-full md:w-auto px-12 py-5 rounded-2xl font-black uppercase tracking-widest glass hover:bg-white/5 transition-all">Back</button>
-                    <button id="find-btn"
-                        class="flex-1 btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-white">Analyze
-                        Specifications</button>
+                    <button id="to-usage-btn"
+                        class="flex-1 btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-white">Next:
+                        Usage Profile</button>
                 </div>
             </div>
         </div>
 
-        <!-- Step 3: Result & Loading -->
-        <div id="wizard-step-3" class="wizard-step hidden animate-in fade-in">
+        <!-- Step 3: Usage Profile (New) -->
+        <div id="wizard-step-3" class="wizard-step hidden space-y-12 animate-in fade-in slide-in-from-right-10">
+            <div class="text-center">
+                <h2 class="text-4xl font-black uppercase tracking-tighter mb-4">Usage <span
+                        class="text-red-500">Analysis</span></h2>
+                <p class="text-gray-500">How you drive determines your engine's thermal and mechanical stress.</p>
+            </div>
+
+            <div class="glass p-12 rounded-[2.5rem] space-y-10">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-500">Driving
+                            Condition</label>
+                        <select id="driving-condition"
+                            class="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-5 text-lg font-bold outline-none focus:border-red-500 transition-all appearance-none cursor-pointer">
+                            <option value="Mixed">Mixed (Default)</option>
+                            <option value="City">City / Stop-Start Traffic</option>
+                            <option value="Highway">Highway / Long Cruises</option>
+                            <option value="Off-road">Off-road / Rough Terrain</option>
+                        </select>
+                    </div>
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-500">Current
+                            Odometer</label>
+                        <select id="mileage-range"
+                            class="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-5 text-lg font-bold outline-none focus:border-red-500 transition-all appearance-none cursor-pointer">
+                            <option value="0-50k">0 - 50,000 km</option>
+                            <option value="50k-100k">50,001 - 1,00,000 km</option>
+                            <option value="100k-150k">1,00,001 - 1,50,000 km</option>
+                            <option value="Above-150k">Above 1,50,000 km</option>
+                        </select>
+                    </div>
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-500">Preferred
+                            Frequency</label>
+                        <select id="preferred-frequency"
+                            class="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-5 text-lg font-bold outline-none focus:border-red-500 transition-all appearance-none cursor-pointer">
+                            <option value="5-6m">Every 5-6 Months</option>
+                            <option value="3-4m">Every 3-4 Months</option>
+                            <option value="12m">Every 12 Months (Long Life)</option>
+                            <option value="Manufacturer">Manufacturer Standard</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 pt-6">
+                    <button onclick="nextStep(2)"
+                        class="w-full md:w-auto px-12 py-5 rounded-2xl font-black uppercase tracking-widest glass hover:bg-white/5 transition-all">Back</button>
+                    <button id="find-btn"
+                        class="flex-1 btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-white">Generate
+                        Comparison Matrix</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Result & Loading -->
+        <div id="wizard-step-4" class="wizard-step hidden animate-in fade-in">
             <!-- Loading View -->
             <div id="loading-view" class="flex flex-col items-center justify-center py-20 space-y-12">
                 <div class="car-container relative w-64 h-24 flex items-center justify-center">
@@ -147,7 +210,7 @@
             </div>
 
             <!-- Result View (Injected via JS) -->
-            <div id="result-container" class="hidden"></div>
+            <div id="result-container" class="hidden pt-10"></div>
         </div>
     </div>
 </section>
@@ -327,7 +390,7 @@
 
         // Update Progress Bar
         const progress = document.getElementById('step-progress');
-        progress.style.width = ((step - 1) / 2) * 100 + '%';
+        progress.style.width = ((step - 1) / 3) * 100 + '%';
 
         currentStep = step;
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -378,19 +441,15 @@
 
         if (!brand || !model || !year) return alert("Please specify brand, model and year");
 
-        console.log("Searching for:", brand, model, year);
-        nextStep(3);
-        const loadingView = document.getElementById('loading-view');
-        const container = document.getElementById('result-container');
-
-        loadingView.classList.remove('hidden');
-        container.classList.add('hidden');
-
         try {
-            // Artificial delay for "Engine DNA Analysis" feel
-            await new Promise(r => setTimeout(r, 1500));
-
-            const params = new URLSearchParams({ brand, model, year });
+            const params = new URLSearchParams({
+                brand,
+                model,
+                year,
+                driving_condition: document.getElementById('driving-condition').value,
+                mileage_range: document.getElementById('mileage-range').value,
+                preferred_frequency: document.getElementById('preferred-frequency').value
+            });
             const response = await fetch(`${window.location.origin}/api/vehicles/recommendations/?${params.toString()}`);
 
             if (response.status === 404) {
@@ -415,8 +474,18 @@
         } catch (e) {
             console.error("Search Error:", e);
             alert(e.message || "Recommendation not found for this specific combination.");
-            nextStep(2);
+            nextStep(2); // Go back to vehicle selection
         }
+    });
+
+    // Add navigation logic for the new step
+    document.getElementById('to-usage-btn').addEventListener('click', () => {
+        const brand = document.getElementById('brand-select').value;
+        const model = document.getElementById('model-select').value;
+        const year = document.getElementById('year-input').value;
+
+        if (!brand || !model || !year) return alert("Please specify brand, model and year");
+        nextStep(3);
     });
 
     function showVariantSelection(variants) {
@@ -479,7 +548,7 @@
 
     async function analyzeVehicle(index) {
         console.log("Analyzing vehicle index:", index);
-        nextStep(3); // Show loading container
+        nextStep(4); // Show loading container
         const v = window.currentResults[index];
         if (!v) {
             console.error("Vehicle data not found at index", index);
@@ -539,157 +608,158 @@
     }
 
     function showRecommendationResult(v) {
-        console.log("Rendering Result View Core...");
+        console.log("Rendering Comparison Screen...");
         try {
-            const aiResult = calculateAIOil(v, window.selectedProfile);
             const loadingView = document.getElementById('loading-view');
             const container = document.getElementById('result-container');
 
             loadingView.classList.add('hidden');
             container.classList.remove('hidden');
 
-            // Normalize fields for display
-            const vType = (Array.isArray(v.vehicle_type) ? v.vehicle_type[0] : v.vehicle_type || 'Vehicle').toLowerCase();
-            const eType = Array.isArray(v.engine_type) ? v.engine_type[0] : v.engine_type || 'Engine';
-            const cc = v.displacement_cc || '---';
-            const vName = v.variant_name || 'Standard';
-
-            // Safe fallback for oil details
-            const oil = v.recommended_oil_details || {
-                brand: 'Castrol',
-                viscosity: aiResult.viscosity,
-                api_rating: 'SN/SP Plus',
-                change_interval_km: 10000,
-                price: '---'
-            };
-
-            // Mock image mapping for professional look
-            const oilImages = {
-                'Castrol': 'https://www.castrol.com/content/dam/castrol/master/products/engine-oil/car-engine-oil/castrol-gtx/castrol-gtx-15w-40-diesel/castrol-gtx-diesel-15w-40-1l.png',
-                'Castrol EDGE': 'https://www.castrol.com/content/dam/castrol/master/products/engine-oil/car-engine-oil/castrol-edge/castrol-edge-5w-30-ll-1l.png',
-                'Castrol GTX': 'https://www.castrol.com/content/dam/castrol/master/products/engine-oil/car-engine-oil/castrol-gtx/castrol-gtx-15w-40-diesel/castrol-gtx-diesel-15w-40-1l.png',
-                'Motul': 'https://static.motul.com/production/posts/14/original/7100_4T_10W40.png',
-                'Motul 7100': 'https://static.motul.com/production/posts/14/original/7100_4T_10W40.png',
-                'Motul 5100': 'https://static.motul.com/production/posts/14/original/5100_4T_15W50.png',
-                'Motul 8100': 'https://static.motul.com/production/posts/14/original/8100_X_CESS_5W40.png',
-                'Shell': 'https://shell.com.gr/media/2552/helix-ultra-5w-40-1l.png',
-                'Shell Helix': 'https://shell.com.gr/media/2552/helix-ultra-5w-40-1l.png',
-                'Mobil 1': 'https://www.mobil.com/content/dam/mobil/products/commercial/passenger-car-motor-oil/mobil-1/mobil-1-5w-30-1l.png',
-                'Mobil Super': 'https://www.mobil.com/content/dam/mobil/products/commercial/passenger-car-motor-oil/mobil-super/mobil-super-2000-x1-10w-40-1l.png',
-                'Liqui Moly': 'https://s3.eu-central-1.amazonaws.com/liquimoly-products-media/media/catalog/product/cache/1/image/600x/9df78eab33525d08d6e5fb8d27136e95/2/3/2324_top_tec_4200_5w_30_new_generation_4l_a1a5.png'
-            };
-
-            const oilImg = oil.image_url || oilImages[oil.brand] || oilImages[oil.brand.split(' ')[0]] || oilImages['Castrol'];
-            const shopBrand = oil.brand.split(' ')[0]; // Use base brand for shop filter (e.g. 'Castrol')
+            const recs = v.recommendations;
+            const options = [
+                { type: 'Premium', color: 'gold', badge: 'badge-premium', data: recs.premium },
+                { type: 'Recommended', color: 'red', badge: 'badge-primary', highlighted: true, data: recs.primary },
+                { type: 'Economy', color: 'green', badge: 'badge-economy', data: recs.economy }
+            ];
 
             container.innerHTML = `
-            <div class="w-full max-w-5xl mx-auto space-y-6 animate-in fade-in duration-700">
-                <!-- Top Navigation Bar -->
-                <div class="flex items-center justify-between mb-8">
-                    <button onclick="nextStep(2)" class="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-white transition-all">
+            <div class="w-full max-w-4xl mx-auto space-y-10 animate-in fade-in duration-700 pb-20">
+                <div class="flex items-center justify-between mt-10">
+                    <button onclick="nextStep(3)" class="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-white transition-all">
                         <i class="fas fa-arrow-left"></i> Back
                     </button>
-                    <div class="bg-green-600/20 text-green-500 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg border border-green-500/20 flex items-center gap-2">
-                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> Engine
+                    <div class="text-right">
+                        <h4 class="text-xl font-black uppercase tracking-tighter">${v.brand} ${v.model}</h4>
+                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">${v.year} | ${v.engine_type} | ${v.displacement_cc}cc</p>
                     </div>
                 </div>
 
-                <h3 class="text-2xl font-black uppercase tracking-tighter mb-4">${oil.brand} Recommendation</h3>
-                <!-- Main Professional Layout - Compact -->
-                <div class="bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[400px]">
-                    <!-- Left Column: Product Image -->
-                    <div class="md:w-5/12 bg-gray-50 flex items-center justify-center p-8 border-r border-gray-100 relative overflow-hidden">
-                        <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;"></div>
-                        <img src="${oilImg}" alt="${oil.brand}" class="h-[250px] object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.15)] hover:scale-105 transition-transform duration-700">
-                    </div>
+                <div class="text-center mb-10">
+                    <h2 class="text-4xl font-black uppercase tracking-tighter mb-4">Precision <span class="text-red-500">Comparison</span></h2>
+                    <p class="text-gray-500">Matched against your driving profile and engine specifications.</p>
+                </div>
 
-                    <!-- Right Column: Details -->
-                    <div class="md:w-7/12 p-8 md:p-10 space-y-6 flex flex-col justify-between text-gray-900">
-                        <div>
-                            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-red-500 mb-1">Personalized Recommendation</p>
-                            <h4 class="text-xl font-black leading-tight mb-2">
-                                For your ${v.brand} ${v.model} ${v.year}, this oil is <span class="text-green-600">better</span> for your ${vType}
-                            </h4>
-                            <div class="flex items-baseline gap-2 mb-4">
-                                <span class="text-3xl font-black">${oil.brand}</span>
-                                <span class="text-3xl font-black text-red-500">${aiResult.viscosity}</span>
-                            </div>
-                            
-                            <p class="text-sm text-gray-500 leading-relaxed max-w-md">
-                                Engineered specifically for the architecture of the ${cc}cc engine, providing superior film strength and thermal stability.
-                            </p>
-                            <a href="#" class="text-[10px] font-bold text-green-600 hover:text-green-700 transition-all underline underline-offset-4 mt-2 inline-block">Technical Datasheet</a>
-                        </div>
-
-                        <!-- Technical Specs Section -->
-                        <div class="space-y-4">
-                            <h5 class="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100 pb-1">Vehicle Component Volumes</h5>
-                            
-                            <div class="grid grid-cols-2 gap-6">
-                                <div class="space-y-0.5">
-                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Oil Capacity</p>
-                                    <p class="text-xl font-black text-gray-900">${v.oil_capacity || '---'} L</p>
-                                </div>
-                                <div class="space-y-0.5">
-                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Engine CC</p>
-                                    <p class="text-xl font-black text-gray-900">${cc}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- AI Logic Badge -->
-                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex items-center justify-between group">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 text-sm">
-                                    <i class="fas fa-microchip"></i>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">AI Logic Score</p>
-                                    <div class="flex items-center gap-1">
-                                        <div class="h-1.5 w-24 bg-gray-200 rounded-full overflow-hidden">
-                                            <div class="h-full bg-red-500 group-hover:w-full transition-all duration-1000" style="width: 98%;"></div>
+                <div class="comparison-table overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Oil Product</th>
+                                <th>Viscosity</th>
+                                <th>Type</th>
+                                <th>Rating (API/JASO)</th>
+                                <th>Interval</th>
+                                <th>Price</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${options.map(opt => {
+                const o = opt.data || { brand: 'TBA', viscosity: '---', oil_type: '---', api_rating: '---', jaso_rating: '---', change_interval_km: '---', price: '0' };
+                return `
+                                <tr class="${opt.highlighted ? 'highlighted' : ''}">
+                                    <td>
+                                        <div class="flex flex-col gap-1">
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-gray-400">${opt.type}</span>
+                                            ${opt.type === 'Premium' ? '<span class="badge-premium w-fit">BEST PERFORMANCE</span>' : ''}
+                                            ${opt.type === 'Economy' ? '<span class="badge-economy w-fit">BEST VALUE</span>' : ''}
                                         </div>
-                                        <span class="text-xs font-black text-gray-900 ml-2">99.8% Match</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-3 pt-2">
-                            <a href="/shop/?brand=${shopBrand}" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-black uppercase tracking-widest py-4 rounded-xl text-center shadow-lg shadow-green-600/20 transition-all active:scale-[0.98] text-xs">
-                                View product details
-                            </a>
-                            <button onclick="window.print()" class="px-5 border-2 border-gray-100 hover:border-gray-200 rounded-xl transition-all">
-                                <i class="fas fa-print text-gray-400"></i>
-                            </button>
-                        </div>
-                    </div>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-oil-can text-xl text-red-500/50"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-black text-white uppercase">${o.brand}</p>
+                                                <p class="text-[10px] text-gray-500 font-bold">${opt.data ? 'In Stock' : 'Pre-order Only'}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="font-bold text-lg text-white">${o.viscosity}</span></td>
+                                    <td><span class="text-xs font-bold text-gray-400 uppercase">${o.oil_type} / ${o.volume_liters}L</span></td>
+                                    <td>
+                                        <div class="text-[10px] font-bold text-gray-400">
+                                            <p>API: ${o.api_rating || '---'}</p>
+                                            <p>JASO: ${o.jaso_rating || '---'}</p>
+                                        </div>
+                                    </td>
+                                    <td><span class="text-xs font-black text-white">${o.change_interval_km} KM</span></td>
+                                    <td>
+                                        <div class="flex items-baseline gap-1">
+                                            <span class="text-xs text-gray-500">₹</span>
+                                            <span class="text-lg font-black text-white">${o.price}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button onclick="addToCart(${o.id})" class="bg-white/10 hover:bg-red-500 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all">Select</button>
+                                    </td>
+                                </tr>
+                                `;
+            }).join('')}
+                        </tbody>
+                    </table>
                 </div>
 
-                <!-- Footer Summary -->
-                <div class="flex flex-col md:flex-row gap-4">
-                    <div class="flex-1 glass p-6 rounded-2xl border-l-4 border-red-500">
-                         <h4 class="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-3">Simulation Summary</h4>
-                         <p class="text-[10px] text-gray-400 leading-relaxed italic">
-                            ${aiResult.is_heavy ? '"Analysis indicates heavy usage profile. Viscosity adjusted to ensure maximum film thickness under extreme heat."' :
-                    aiResult.is_aged ? '"Engine tolerance adjustment applied for model year ' + v.year + '. Viscosity optimized for mechanical seal longevity."' :
-                        '"Optimal thermal profile confirmed. Recommendation aligns with manufacturer engineering standards and local environment variables."'}
-                         </p>
+                <!-- Best For Explanations -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+                    <div class="glass p-6 rounded-2xl border-t-2 border-gold/50">
+                        <h5 class="text-[10px] font-black uppercase text-[#FFD700] mb-2">Premium Choice</h5>
+                        <p class="text-[11px] text-gray-400 leading-relaxed italic">Maximum protection for high-performance and Turbo engines. Best for long-term engine health.</p>
                     </div>
-                    <div class="flex-1 glass p-6 rounded-2xl border-l-4 border-green-500 flex items-center justify-between">
-                        <div>
-                             <h4 class="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-1">Service Interval</h4>
-                             <p class="text-xl font-black">${oil.change_interval_km || 10000} KM</p>
-                        </div>
-                        <i class="fas fa-check-circle text-2xl text-green-500 opacity-20"></i>
+                    <div class="glass p-6 rounded-2xl border-t-2 border-red-500/50">
+                        <h5 class="text-[10px] font-black uppercase text-red-500 mb-2">Recommended</h5>
+                        <p class="text-[11px] text-gray-400 leading-relaxed italic">Perfect balance of performance and price. Tailored to your specific mileage and driving conditions.</p>
+                    </div>
+                    <div class="glass p-6 rounded-2xl border-t-2 border-green-500/50">
+                        <h5 class="text-[10px] font-black uppercase text-green-500 mb-2">Economy Selection</h5>
+                        <p class="text-[11px] text-gray-400 leading-relaxed italic">Cost-effective protection for standard drain intervals. Reliable for daily commutes.</p>
                     </div>
                 </div>
             </div>
-        `;
+            `;
         } catch (error) {
             console.error("FATAL UI ERROR:", error);
-            alert("An error occurred while rendering the recommendation. Check console for details.");
+            alert("An error occurred while rendering the comparison screen.");
             nextStep(2);
+        }
+    }
+
+    async function addToCart(oilId) {
+        if (!oilId || oilId === 'TBA') return alert("Product selection pending data availability.");
+
+        console.log("Adding oil to cart:", oilId);
+        const csrfToken = document.getElementById('csrf_token').value;
+
+        try {
+            const response = await fetch(`${window.location.origin}/cart/add/${oilId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (data.status === 'success') {
+                // Trigger a success notification (Custom alert for premium feel)
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-10 right-10 bg-green-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest shadow-2xl animate-in slide-in-from-right-10 z-[100]';
+                toast.innerHTML = `<i class="fas fa-shopping-cart mr-2"></i> Added to Cart`;
+                document.body.appendChild(toast);
+
+                // Update cart count if exists in header
+                const cartCounter = document.querySelector('.cart-count'); // Adjust based on base.html
+                if (cartCounter) cartCounter.innerText = data.cart_count;
+
+                setTimeout(() => toast.remove(), 3000);
+            } else {
+                alert("Could not add to cart. Please ensure you are logged in.");
+            }
+        } catch (error) {
+            console.error("Cart error:", error);
+            alert("Connection error. Please try again.");
         }
     }
 
@@ -702,6 +772,66 @@
 <style>
     .glow-text {
         text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+    }
+
+    .comparison-table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 1.5rem;
+        overflow: hidden;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+        padding: 1.5rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .comparison-table th {
+        background: rgba(255, 255, 255, 0.03);
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 0.65rem;
+        letter-spacing: 0.15em;
+        color: #777;
+    }
+
+    .comparison-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .comparison-table tr.highlighted {
+        background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, transparent 100%);
+    }
+
+    .comparison-table tr.highlighted td:first-child {
+        border-left: 4px solid #ef4444;
+    }
+
+    .badge-premium {
+        background: linear-gradient(45deg, #FFD700, #FFA500);
+        color: black;
+        font-size: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        font-weight: 900;
+    }
+
+    .comparison-table table {
+        min-width: 900px;
+    }
+
+    .badge-economy {
+        background: #4ade80;
+        color: black;
+        font-size: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        font-weight: 900;
     }
 </style>
 {% endblock %}

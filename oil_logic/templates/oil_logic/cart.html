@@ -25,15 +25,15 @@
             <div class="flex-grow space-y-1 text-center md:text-left">
                 <p class="text-[10px] font-black uppercase tracking-widest text-red-500">{{ item.oil.brand }}</p>
                 <h3 class="text-xl font-black uppercase tracking-tighter text-white">{{ item.oil.viscosity }} {{
-                    item.oil.oil_type }}</h3>
-                <p class="text-xs text-gray-500 font-medium">${{ item.oil.price }} per unit</p>
+                    item.oil.oil_type }} ({{ item.oil.volume_liters }}L)</h3>
+                <p class="text-xs text-gray-500 font-medium">₹{{ item.oil.price }} per unit</p>
             </div>
 
             <!-- Quantity & Subtotal -->
             <div class="flex flex-col items-center md:items-end gap-1">
                 <span
                     class="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-none mb-1">Subtotal</span>
-                <span class="text-2xl font-black text-white">${{ item.total_price }}</span>
+                <span class="text-2xl font-black text-white">₹{{ item.total_price }}</span>
                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Qty: {{ item.quantity }}</p>
             </div>
 
@@ -52,7 +52,7 @@
             class="glass-premium p-10 rounded-[3rem] mt-12 flex flex-col md:flex-row items-center justify-between gap-8 border-t-4 border-red-500">
             <div class="space-y-1 text-center md:text-left">
                 <p class="text-xs font-black uppercase tracking-widest text-gray-500">Total Amount</p>
-                <h2 class="text-5xl font-black text-white">${{ total }}</h2>
+                <h2 class="text-5xl font-black text-white">₹{{ total }}</h2>
             </div>
             <div class="flex gap-4">
                 <a href="{% url 'shop_page' %}"

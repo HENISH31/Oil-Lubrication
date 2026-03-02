@@ -66,6 +66,11 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
         model = request.query_params.get('model')
         year = request.query_params.get('year')
         
+        # New parameters
+        driving_condition = request.query_params.get('driving_condition', 'Mixed')
+        mileage_range = request.query_params.get('mileage_range', '0-50k')
+        preferred_frequency = request.query_params.get('preferred_frequency', '5-6m')
+
         if not all([brand, model, year]):
             return Response({"error": "Brand, model, and year are required"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -73,8 +78,45 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
         if not vehicles.exists():
             return Response({"error": "Vehicle not found"}, status=status.HTTP_404_NOT_FOUND)
             
-        serializer = self.get_serializer(vehicles, many=True)
-        return Response(serializer.data)
+        data = []
+        for v in vehicles:
+            v_data = VehicleSerializer(v).data
+            
+            # Logic for Primary Oil selection (Best match)
+            base_oil = v.recommended_oil
+            target_viscosity = base_oil.viscosity if base_oil else "5W-30"
+            target_type = base_oil.oil_type if base_oil else "Synthetic"
+
+            # Adjustments based on inputs
+            if driving_condition == 'Off-road' or mileage_range in ['100k-150k', 'Above-150k']:
+                # Nudge towards thicker oil if possible (simple heuristic for this system)
+                if target_viscosity == "0W-20": target_viscosity = "5W-30"
+                elif target_viscosity == "5W-30": target_viscosity = "5W-40"
+                elif target_viscosity == "10W-30": target_viscosity = "10W-40"
+
+            if preferred_frequency == '12m':
+                target_type = "Synthetic"
+
+            # 1. Primary Oil (The refined recommendation)
+            primary_oil = Oil.objects.filter(viscosity=target_viscosity).order_by('-rating').first()
+            if not primary_oil: primary_oil = base_oil
+
+            # 2. Premium Oil (Highest price/rating Synthetic)
+            premium_oil = Oil.objects.filter(viscosity=target_viscosity, oil_type='Synthetic').order_by('-price').first()
+            if not premium_oil: premium_oil = primary_oil
+
+            # 3. Economy Oil (Lowest price Mineral/Semi-Synthetic)
+            economy_oil = Oil.objects.filter(viscosity=target_viscosity, oil_type__in=['Mineral', 'Semi-Synthetic']).order_by('price').first()
+            if not economy_oil: economy_oil = Oil.objects.filter(viscosity=target_viscosity).order_by('price').first()
+
+            v_data['recommendations'] = {
+                'primary': OilSerializer(primary_oil).data if primary_oil else None,
+                'premium': OilSerializer(premium_oil).data if premium_oil else None,
+                'economy': OilSerializer(economy_oil).data if economy_oil else None,
+            }
+            data.append(v_data)
+
+        return Response(data)
 
 class MaintenanceViewSet(viewsets.ModelViewSet):
     serializer_class = MaintenanceSerializer

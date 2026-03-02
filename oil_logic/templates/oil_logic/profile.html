@@ -88,7 +88,8 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-black uppercase tracking-tighter">{{ item.quantity }}x {{
-                                            item.oil.brand }} {{ item.oil.viscosity }}</p>
+                                            item.oil.brand }} {{ item.oil.viscosity }} ({{
+                                            item.oil.volume_liters|default:"1.0" }}L)</p>
                                         <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{{
                                             item.oil.oil_type }}</p>
                                     </div>
