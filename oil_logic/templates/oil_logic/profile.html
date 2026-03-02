@@ -1,0 +1,124 @@
+{% extends 'oil_logic/base.html' %}
+
+{% block title %}My Profile | OilRec{% endblock %}
+
+{% block content %}
+<section class="max-w-6xl mx-auto px-6 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+
+        <!-- Sidebar: User Details -->
+        <div class="lg:col-span-1 space-y-8">
+            <div class="glass-premium p-10 rounded-[3rem] text-center relative overflow-hidden group">
+                <div
+                    class="absolute -top-10 -right-10 w-40 h-40 bg-red-500/10 blur-[80px] rounded-full group-hover:bg-red-500/20 transition-all duration-700">
+                </div>
+
+                <div
+                    class="w-24 h-24 bg-gradient-to-br from-red-500 to-red-900 rounded-full mx-auto mb-6 flex items-center justify-center text-white text-3xl font-black shadow-2xl relative">
+                    {{ user.username|first|upper }}
+                </div>
+
+                <h2 class="text-2xl font-black uppercase tracking-tighter">{{ user.get_full_name|default:user.username
+                    }}</h2>
+                <p class="text-gray-500 text-sm font-medium lowercase mb-8">{{ user.email }}</p>
+
+                <div class="space-y-4 text-left">
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-1">Phone Number</p>
+                        <p class="text-xs font-bold">{{ profile.phone_number|default:"Not Provided" }}</p>
+                    </div>
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-1">Account Created
+                        </p>
+                        <p class="text-xs font-bold">{{ user.date_joined|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+
+                <div class="pt-8 space-y-3">
+                    <form method="post" action="{% url 'account_logout' %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                            class="w-full py-4 rounded-2xl bg-white/5 hover:bg-white/10 text-gray-500 hover:text-white transition-all font-black uppercase tracking-widest text-[10px]">
+                            Sign Out Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-12">
+
+
+            <!-- Purchase History -->
+            <div>
+                <h2 class="text-xs font-black uppercase tracking-[0.4em] text-red-500 mb-2">Safe & Secure Transactions
+                </h2>
+                <h1 class="text-4xl font-black uppercase tracking-tighter mb-8">Purchase <span
+                        class="text-red-500">History</span></h1>
+
+                {% if orders %}
+                <div class="space-y-6">
+                    {% for order in orders %}
+                    <div
+                        class="glass-premium rounded-[2.5rem] overflow-hidden border-white/5 hover:border-red-500/30 transition-all duration-500">
+                        <div class="p-8 bg-white/[0.02] flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-widest text-red-500">Order #{{
+                                    order.id }}</p>
+                                <p class="text-white font-bold">{{ order.created_at|date:"F d, Y @ H:i" }}</p>
+                            </div>
+                            <div class="text-center md:text-right">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Grand
+                                    Total</p>
+                                <p class="text-2xl font-black">₹{{ order.total_price }}</p>
+                            </div>
+                        </div>
+                        <div class="p-8 space-y-4">
+                            {% for item in order.items.all %}
+                            <div class="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
+                                <div class="flex items-center gap-4">
+                                    <div
+                                        class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center p-2 text-red-500/30">
+                                        {% if item.oil.image_url %}
+                                        <img src="{{ item.oil.image_url }}" alt="" class="w-full h-full object-contain">
+                                        {% else %}
+                                        <i class="fas fa-oil-can text-sm"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-black uppercase tracking-tighter">{{ item.quantity }}x {{
+                                            item.oil.brand }} {{ item.oil.viscosity }}</p>
+                                        <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{{
+                                            item.oil.oil_type }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-black">₹{{ item.price_at_purchase }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="glass-premium p-20 rounded-[3rem] text-center space-y-6">
+                    <i class="fas fa-history text-6xl text-red-500/10 mb-4 animate-pulse"></i>
+                    <h3 class="text-2xl font-black uppercase tracking-tighter">No orders yet</h3>
+                    <p class="text-gray-500 max-w-sm mx-auto">Your purchase history is currently empty. Start exploring
+                        the marketplace.</p>
+                    <div class="pt-4">
+                        <a href="{% url 'shop_page' %}"
+                            class="btn-primary px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-widest text-white inline-block">
+                            Go To Marketplace
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,486 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OilRec | Premium Automotive Care{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --neon-red: 0 0 20px rgba(255, 77, 77, 0.3);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-primary, #0A0A0A);
+            color: var(--text-primary, #ffffff);
+            overflow-x: hidden;
+            color-scheme: dark;
+        }
+
+        /* ── Theme Tokens ── */
+        :root,
+        [data-theme="dark"] {
+            --bg-primary: #0A0A0A;
+            --bg-secondary: #141414;
+            --text-primary: #ffffff;
+            --text-muted: #6b7280;
+            --card-bg: rgba(20, 20, 20, 0.85);
+            --border-col: rgba(255, 255, 255, 0.06);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f4f6f9;
+            --bg-secondary: #ffffff;
+            --text-primary: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --border-col: rgba(0, 0, 0, 0.08);
+            color-scheme: light;
+        }
+
+        [data-theme="light"] body {
+            background-color: #f4f6f9;
+            color: #1e293b;
+        }
+
+        [data-theme="light"] .glass {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        [data-theme="light"] .glass-premium {
+            background: rgba(255, 255, 255, 0.92);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="light"] nav {
+            background: rgba(255, 255, 255, 0.85) !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+        }
+
+        [data-theme="light"] select,
+        [data-theme="light"] select option {
+            background-color: #ffffff !important;
+            color: #1e293b !important;
+        }
+
+        .glass {
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .glass-premium {
+            background: rgba(20, 20, 20, 0.85);
+            /* Slightly darker, more opaque */
+            backdrop-filter: blur(20px);
+            /* Much stronger blur for better glass effect */
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            /* Brighter border */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF4D4D 0%, #B30000 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-primary:hover::after {
+            opacity: 1;
+        }
+
+        .btn-primary:hover {
+            box-shadow: var(--neon-red);
+            transform: translateY(-2px);
+        }
+
+        /* Custom Scrollbar - High Visibility */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+            border: 2px solid #050505;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF4D4D;
+        }
+
+        /* Force Dark Selection Dropdowns - Robust Fix */
+        select,
+        select option {
+            background-color: #0A0A0A !important;
+            color: #ffffff !important;
+        }
+
+        /* Removing default arrow to avoid white background issues on some browsers */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1.5rem center;
+            background-size: 1rem;
+            padding-right: 3rem;
+        }
+
+        /* Global Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .animate-scale-in {
+            animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .page-transition {
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="{% url 'home' %}" class="group flex items-center gap-3">
+                <div class="relative">
+                    <i class="fas fa-oil-can text-3xl text-red-500 group-hover:rotate-12 transition-transform"></i>
+                    <div
+                        class="absolute -inset-2 bg-red-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                    </div>
+                </div>
+                <span class="text-2xl font-black uppercase tracking-tighter">Oil<span
+                        class="text-red-500">Rec</span></span>
+            </a>
+
+            <div class="flex items-center gap-4">
+                <div
+                    class="hidden md:flex items-center space-x-8 text-xs font-bold uppercase tracking-widest text-gray-400">
+                    <a href="{% url 'home' %}" class="hover:text-white transition">Home</a>
+                    <a href="{% url 'dashboard' %}" class="hover:text-white transition">Garage</a>
+                    <a href="{% url 'recommendation_page' %}" class="hover:text-white transition">Recommender</a>
+                    <a href="{% url 'shop_page' %}" class="hover:text-white transition">Shop</a>
+                    <a href="{% url 'academy' %}" class="hover:text-white transition">Academy</a>
+                    {% if user.is_authenticated %}
+                    <!-- Cart Icon -->
+                    <a href="{% url 'cart_view' %}" class="relative group p-2 hover:text-white transition">
+                        <i class="fas fa-shopping-cart text-lg"></i>
+                        <span id="cart-count"
+                            class="absolute -top-1 -right-1 bg-red-500 text-[8px] text-white w-4 h-4 rounded-full flex items-center justify-center font-black">
+                            {{ user.cart_items.count|default:0 }}
+                        </span>
+                    </a>
+
+                    <!-- Profile Dropdown -->
+                    <div class="relative ml-4">
+                        <button onclick="toggleProfileDropdown()"
+                            class="flex items-center gap-3 group focus:outline-none">
+                            <div
+                                class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-800 flex items-center justify-center text-white border-2 border-white/10 group-hover:border-red-500 transition-all shadow-lg overflow-hidden">
+                                <i class="fas fa-user text-sm"></i>
+                            </div>
+                        </button>
+
+                        <div id="profile-dropdown"
+                            class="hidden absolute right-0 mt-4 w-72 glass-premium rounded-3xl p-6 shadow-2xl border border-white/10 animate-scale-in">
+                            <div class="space-y-4">
+                                <div class="pb-4 border-b border-white/5">
+                                    <p class="text-[10px] text-red-500 font-black uppercase tracking-[0.2em] mb-1">
+                                        MEMBER
+                                        PROFILE</p>
+                                    <p class="text-white text-lg font-black truncate leading-tight">
+                                        {% if user.first_name %}
+                                        {{ user.first_name }} {{ user.last_name }}
+                                        {% else %}
+                                        {{ user.username|capfirst }}
+                                        {% endif %}
+                                    </p>
+                                    <p class="text-[10px] text-gray-500 mt-1 lowercase truncate">{{ user.email }}</p>
+                                    {% if user.profile.phone_number %}
+                                    <p class="text-[9px] text-red-500/80 font-bold mt-1">{{ user.profile.phone_number }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="flex flex-col gap-2">
+                                    <a href="{% url 'dashboard' %}"
+                                        class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition text-gray-400 hover:text-white">
+                                        <i class="fas fa-warehouse text-xs"></i>
+                                        <span>My Garage</span>
+                                    </a>
+                                    <a href="{% url 'profile_page' %}"
+                                        class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition text-gray-400 hover:text-white">
+                                        <i class="fas fa-history text-xs"></i>
+                                        <span>Purchase History</span>
+                                    </a>
+                                </div>
+
+                                <div class="pt-4 border-t border-white/5">
+                                    <form method="post" action="{% url 'account_logout' %}" class="w-full">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                            class="w-full flex items-center justify-center gap-3 p-3 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white transition font-black">
+                                            <i class="fas fa-sign-out-alt text-xs"></i>
+                                            <span>Sign Out</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'account_signup' %}"
+                        class="btn-primary px-6 py-3 rounded-full text-white tracking-widest text-xs font-bold">Get
+                        Started</a>
+                    {% endif %}
+                </div>
+
+                <!-- Dark Mode Toggle -->
+                <button id="theme-toggle" onclick="toggleTheme()"
+                    class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all border border-white/5 hover:border-white/20"
+                    title="Toggle dark/light mode">
+                    <i id="theme-icon" class="fas fa-sun text-xs text-yellow-400"></i>
+                </button>
+
+                <!-- Mobile Menu Toggle -->
+                <button class="md:hidden text-white" onclick="toggleMenu()">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profile-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function (e) {
+            const dropdown = document.getElementById('profile-dropdown');
+            const btn = dropdown?.previousElementSibling;
+            if (dropdown && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    </script>
+
+    <!-- Mobile Fullscreen Menu -->
+    <div id="mobile-menu"
+        class="fixed inset-0 z-[60] glass hidden items-center justify-center animate-in fade-in duration-300">
+        <button class="absolute top-6 right-6 text-3xl" onclick="toggleMenu()">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="flex flex-col items-center space-y-8 text-2xl font-black uppercase tracking-widest">
+            <a href="{% url 'home' %}" onclick="toggleMenu()">Home</a>
+            <a href="{% url 'dashboard' %}" onclick="toggleMenu()">My Garage</a>
+            <a href="{% url 'recommendation_page' %}" onclick="toggleMenu()">Recommender</a>
+            <a href="{% url 'shop_page' %}" onclick="toggleMenu()">Shop</a>
+            <a href="{% url 'academy' %}" onclick="toggleMenu()">Academy</a>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'account_logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="text-red-500">Sign Out</button>
+            </form>
+            {% else %}
+            <a href="{% url 'account_signup' %}" class="text-red-500" onclick="toggleMenu()">Get Started</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+            document.body.classList.toggle('overflow-hidden');
+        }
+    </script>
+
+    <main class="flex-grow pt-20 page-transition animate-fade-in">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-12 px-6 mt-20">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
+            <div class="space-y-4">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl font-bold">OIL<span class="text-red-500">REC</span></span>
+                </div>
+                <p class="text-gray-500">Empowering vehicle owners with data-driven lubrication expertise.</p>
+            </div>
+            <!-- More footer columns... -->
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+    <!-- GlideAdvisor Floating UI -->
+    <div id="glide-advisor-container" class="fixed bottom-6 right-6 z-[100] font-sans">
+        <!-- Chat Bubble -->
+        <button id="chat-bubble" onclick="toggleChat()"
+            class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-red-500/40 hover:scale-110 active:scale-95 transition-all duration-300 group">
+            <i class="fas fa-robot text-2xl group-hover:hidden"></i>
+            <i class="fas fa-times text-2xl hidden group-hover:block" id="close-icon"></i>
+            <span class="absolute -top-1 -right-1 flex h-4 w-4">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-4 w-4 bg-red-600 border-2 border-white/20"></span>
+            </span>
+        </button>
+
+        <!-- Chat Panel -->
+        <div id="chat-panel"
+            class="hidden absolute bottom-24 right-0 w-[350px] md:w-[420px] h-[550px] bg-[#0F0F0F]/95 backdrop-blur-2xl rounded-[3rem] border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-500 scale-95 origin-bottom-right">
+            <!-- Header -->
+            <div
+                class="p-8 border-b border-white/5 bg-gradient-to-r from-red-500/10 to-transparent flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 bg-red-500 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg shadow-red-500/20">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-black uppercase tracking-[0.2em] text-white">Elara</h3>
+                        <p class="text-[9px] text-red-500 font-black uppercase tracking-widest mt-0.5">Automotive AI</p>
+                    </div>
+                </div>
+                <button onclick="toggleChat()" class="text-white/20 hover:text-white transition-colors">
+                    <i class="fas fa-minus text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Messages Area -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-hide py-10">
+                <div class="flex gap-4">
+                    <div
+                        class="w-8 h-8 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0 text-red-500 text-[10px] mt-1 shadow-sm">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div
+                        class="bg-white/[0.03] p-5 rounded-3xl rounded-tl-none border border-white/5 max-w-[85%] shadow-sm">
+                        <p class="text-[11px] text-white/70 leading-relaxed font-semibold">
+                            Greetings! I am <span class="text-white font-black">Elara</span>, your premium
+                            lubrication expert. How can I assist you with your engine's health today?
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-8 border-t border-white/5 bg-white/[0.02]">
+                <form id="chat-form" onsubmit="handleChatSubmit(event)" class="relative">
+                    <input type="text" id="chat-input"
+                        class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-[11px] text-white placeholder-white/20 focus:outline-none focus:border-red-500/50 transition-all pr-14 font-semibold shadow-inner"
+                        placeholder="Type your technical query...">
+                    <button type="submit"
+                        class="absolute right-2 top-2 w-10 h-10 bg-red-500 rounded-xl text-white flex items-center justify-center hover:bg-red-600 active:scale-95 transition-all shadow-lg shadow-red-500/20">
+                        <i class="fas fa-paper-plane text-[10px]"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/glide_advisor.js' %}"></script>
+    <script>
+        // ── Dark/Light Theme Toggle ──
+        (function () {
+            const saved = localStorage.getItem('oilrec-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+            // Update icon once DOM is ready
+            document.addEventListener('DOMContentLoaded', () => updateThemeIcon(saved));
+        })();
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('oilrec-theme', next);
+            updateThemeIcon(next);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('theme-icon');
+            if (!icon) return;
+            if (theme === 'light') {
+                icon.className = 'fas fa-moon text-xs text-blue-400';
+            } else {
+                icon.className = 'fas fa-sun text-xs text-yellow-400';
+            }
+        }
+    </script>
+</body>
+
+</html>

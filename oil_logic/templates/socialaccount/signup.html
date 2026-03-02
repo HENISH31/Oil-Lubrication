@@ -1,0 +1,55 @@
+{% extends "oil_logic/base.html" %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Signup" %}{% endblock %}
+
+{% block content %}
+<section class="max-w-md mx-auto mt-20 px-6">
+    <div class="glass p-10 rounded-3xl shadow-2xl space-y-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-bold">Registration <span class="text-red-500">Step 2</span></h2>
+            <p class="text-gray-500 mt-2">{% blocktrans with provider_name=account.get_provider.name %}You are about to
+                use your {{ provider_name }} account to login. As a final step, please complete the following form:{%
+                endblocktrans %}</p>
+        </div>
+
+        <form class="signup space-y-6" id="signup_form" method="post" action="{% url 'socialaccount_signup' %}">
+            {% csrf_token %}
+            {% for field in form %}
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">{{ field.label }}</label>
+                <div
+                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus-within:border-red-500 transition">
+                    {{ field }}
+                </div>
+                {% if field.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+            <button type="submit"
+                class="btn-primary w-full py-4 rounded-xl font-bold text-white uppercase tracking-widest">
+                {% trans "Sign Up" %}
+            </button>
+        </form>
+    </div>
+</section>
+
+<style>
+    input {
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        width: 100% !important;
+        color: white !important;
+    }
+
+    .helptext,
+    .helptext ul {
+        display: none;
+    }
+</style>
+{% endblock %}

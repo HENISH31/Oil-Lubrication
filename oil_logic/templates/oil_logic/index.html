@@ -1,0 +1,437 @@
+{% extends 'oil_logic/base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative h-[80vh] flex items-center justify-center overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-[#0A0A0A] via-transparent to-[#0A0A0A] z-10"></div>
+    <div class="absolute inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&q=80&w=2000"
+            class="w-full h-full object-cover opacity-20 grayscale brightness-50" alt="Engine Oil background">
+    </div>
+
+    <div class="absolute inset-0 z-0 overflow-hidden">
+        <div id="hero-3d-container" class="w-full h-full opacity-60 cursor-pointer"></div>
+    </div>
+
+    <div class="relative z-20 text-center space-y-8 px-6 animate-in fade-in zoom-in duration-1000">
+
+        <h1 class="text-6xl md:text-8xl font-black tracking-tighter hero-text">
+            THE PERFECT <span class="text-red-500">GLIDE</span><br>FOR YOUR ENGINE
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed hero-text">
+            Revolutionizing vehicle maintenance with AI-powered lubrication insights.
+            Get precision oil recommendations tailored specifically for your car or bike's
+            model, year, and engine type. Protect your performance, extend engine life.
+        </p>
+
+        <!-- Selection Buttons -->
+        <div class="flex flex-wrap justify-center gap-6 pt-8">
+            {% if user.is_authenticated %}
+            <a href="{% url 'recommendation_page' %}"
+                class="btn-primary px-10 py-5 rounded-full font-bold text-lg uppercase tracking-widest shadow-2xl shadow-red-500/20 hover:scale-105 transition hero-btn">
+                Start Recommendation
+            </a>
+            {% else %}
+            <a href="{% url 'account_signup' %}?next={% url 'recommendation_page' %}"
+                class="btn-primary px-10 py-5 rounded-full font-bold text-lg uppercase tracking-widest shadow-2xl shadow-red-500/20 hover:scale-105 transition hero-btn">
+                Start Recommendation
+            </a>
+            {% endif %}
+            <a href="{% url 'academy' %}"
+                class="glass px-10 py-5 rounded-full font-bold text-lg uppercase tracking-widest hover:bg-white/10 transition hero-btn">
+                Engine Academy
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Highlights Section -->
+<section class="max-w-7xl mx-auto px-6 py-24 grid grid-cols-1 md:grid-cols-3 gap-12">
+    <div
+        class="glass p-10 rounded-3xl space-y-4 hover:border-red-500/30 transition group relative overflow-hidden reveal-card">
+        <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition">
+            <i class="fas fa-microchip text-9xl"></i>
+        </div>
+        <div
+            class="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center group-hover:bg-red-500 transition">
+            <i class="fas fa-microchip text-2xl text-red-500 group-hover:text-white transition"></i>
+        </div>
+        <h3 class="text-2xl font-bold">AI Driven</h3>
+        <p class="text-gray-500 leading-relaxed">Sophisticated algorithms matching your specific vehicle DNA with global
+            lubrication standards.</p>
+    </div>
+    <div
+        class="glass p-10 rounded-3xl space-y-4 hover:border-red-500/30 transition group relative overflow-hidden reveal-card">
+        <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition">
+            <i class="fas fa-motorcycle text-9xl"></i>
+        </div>
+        <div
+            class="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center group-hover:bg-red-500 transition">
+            <i class="fas fa-motorcycle text-2xl text-red-500 group-hover:text-white transition"></i>
+        </div>
+        <h3 class="text-2xl font-bold">Dual Focused</h3>
+        <p class="text-gray-500 leading-relaxed">Dedicated engineering datasets for both high-performance automobiles
+            and precision motorcycles.</p>
+    </div>
+    <div
+        class="glass p-10 rounded-3xl space-y-4 hover:border-red-500/30 transition group relative overflow-hidden reveal-card">
+        <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition">
+            <i class="fas fa-shield-alt text-9xl"></i>
+        </div>
+        <div
+            class="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center group-hover:bg-red-500 transition">
+            <i class="fas fa-shield-alt text-2xl text-red-500 group-hover:text-white transition"></i>
+        </div>
+        <h3 class="text-2xl font-bold">Engine Longevity</h3>
+        <p class="text-gray-500 leading-relaxed">Calculated intervals designed to prevent friction wear and maintain
+            factory peak performance.</p>
+    </div>
+</section>
+
+<!-- ⛽ Fuel Cost Calculator -->
+<section class="max-w-2xl mx-auto px-6 py-10 mb-8">
+    <div class="relative overflow-hidden rounded-[2.5rem] p-0.5 reveal-calc aspect-square"
+        style="background: linear-gradient(135deg, #FF4D4D22, #7C3AED22, #FF4D4D22)">
+        <div
+            class="glass-premium rounded-[2.4rem] p-10 md:p-14 relative overflow-hidden h-full flex flex-col justify-center">
+            <!-- Background decoration -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-[80px] pointer-events-none">
+            </div>
+            <div
+                class="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/5 rounded-full blur-[80px] pointer-events-none">
+            </div>
+
+            <div class="space-y-8">
+                <!-- Left: Info -->
+                <div class="space-y-4">
+                    <p class="text-[10px] font-black uppercase tracking-[0.4em] text-red-500">Vadodara Fuel Prices</p>
+                    <h2 class="text-4xl font-black uppercase tracking-tighter">Fuel Cost <span
+                            class="text-red-500">Calculator</span></h2>
+                    <p class="text-gray-500 text-sm leading-relaxed">Calculate your trip fuel cost instantly based on
+                        distance, mileage, and current rates.</p>
+
+                    <!-- Fuel type selector -->
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="setFuelType('petrol', 110)" id="btn-petrol"
+                            class="fuel-type-btn px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all bg-red-500/10 border-red-500/30 text-red-400">
+                            ⛽ Petrol
+                        </button>
+                        <button onclick="setFuelType('diesel', 95)" id="btn-diesel"
+                            class="fuel-type-btn px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all bg-white/5 border-white/10 text-gray-500">
+                            🔵 Diesel
+                        </button>
+                        <button onclick="setFuelType('cng', 80)" id="btn-cng"
+                            class="fuel-type-btn px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all bg-white/5 border-white/10 text-gray-500">
+                            🟢 CNG
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Right: Calculator -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-1 block">Distance
+                            (km)</label>
+                        <input type="number" id="calc-distance" placeholder="100" min="0"
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-lg font-black outline-none focus:border-red-500 transition-all"
+                            oninput="calculateFuel()">
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-1 block">Mileage
+                            (km/L)</label>
+                        <input type="number" id="calc-mileage" placeholder="15" min="1"
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-lg font-black outline-none focus:border-red-500 transition-all"
+                            oninput="calculateFuel()">
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-1 block">Fuel
+                            Price (₹/L)</label>
+                        <input type="number" id="calc-price" value="110" min="1"
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-lg font-black outline-none focus:border-red-500 transition-all"
+                            oninput="calculateFuel()">
+                    </div>
+
+                    <!-- Result -->
+                    <div id="calc-result" class="hidden glass rounded-2xl p-6 space-y-3 border border-red-500/20">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[9px] text-gray-500 uppercase font-black tracking-widest">Total
+                                Cost</span>
+                            <span id="res-total" class="text-2xl font-black text-red-400"></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[9px] text-gray-500 uppercase font-black tracking-widest">Fuel
+                                Needed</span>
+                            <span id="res-liters" class="text-sm font-black"></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[9px] text-gray-500 uppercase font-black tracking-widest">Cost per
+                                km</span>
+                            <span id="res-per-km" class="text-sm font-black text-green-400"></span>
+                        </div>
+                    </div>
+
+                    <div id="calc-empty" class="glass rounded-2xl p-6 text-center border border-white/5">
+                        <p class="text-[9px] text-gray-600 uppercase tracking-widest">Enter distance & mileage to
+                            calculate</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="border-y border-white/5 py-12 mb-24 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6">
+        <p class="text-center text-xs font-bold text-gray-500 uppercase tracking-widest mb-10">Trusted Engineering
+            Partners</p>
+        <div
+            class="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition duration-1000">
+            <i class="fab fa-aws text-4xl partner-logo"></i>
+            <i class="fab fa-google text-4xl partner-logo"></i>
+            <i class="fab fa-react text-4xl partner-logo"></i>
+            <i class="fab fa-microsoft text-3xl partner-logo"></i>
+            <i class="fab fa-atlassian text-4xl partner-logo"></i>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Counter Section -->
+<section class="max-w-4xl mx-auto px-6 py-24 text-center">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-12">
+        <div class="space-y-2">
+            <p class="text-4xl font-black text-red-500 stat-number" data-target="25" data-suffix="K+">149k</p>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Vehicles Indexed</p>
+        </div>
+        <div class="space-y-2">
+            <p class="text-4xl font-black text-red-500 stat-number" data-target="12" data-suffix="K+">95</p>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Calculations</p>
+        </div>
+        <div class="space-y-2">
+            <p class="text-4xl font-black text-white stat-number" data-target="99.8" data-suffix="%">89</p>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Accuracy</p>
+        </div>
+        <div class="space-y-2">
+            <p class="text-4xl font-black text-white stat-number" data-target="100" data-suffix="+">30+</p>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Global Brands</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Three.js + Animation Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script type="module">
+    import * as THREE from 'https://cdn.skypack.dev/three@0.160.0';
+
+    async function init3DHero() {
+        const container = document.getElementById('hero-3d-container');
+        if (!container) return;
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        let rotationSpeed = 0.005;
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+        const spotLight = new THREE.SpotLight(0xff4d4d, 150);
+        spotLight.position.set(10, 15, 10);
+        scene.add(spotLight);
+
+        // ── Original Tech-Knot Animation ──
+        const engineGroup = new THREE.Group();
+
+        // Torus Knot (Outer structure)
+        const geometry = new THREE.TorusKnotGeometry(3, 0.2, 256, 32);
+        const material = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            metalness: 1.0,
+            roughness: 0.2,
+            emissive: 0xff0000,
+            emissiveIntensity: 0.4
+        });
+        const knot = new THREE.Mesh(geometry, material);
+        engineGroup.add(knot);
+
+        // Inner glowing core
+        const coreGeo = new THREE.IcosahedronGeometry(1.5, 1);
+        const coreMat = new THREE.MeshBasicMaterial({
+            color: 0xff4d4d,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.2
+        });
+        const core = new THREE.Mesh(coreGeo, coreMat);
+        engineGroup.add(core);
+
+        scene.add(engineGroup);
+
+        camera.position.z = 12;
+
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX - window.innerWidth / 2) * 0.0001;
+            mouseY = (e.clientY - window.innerHeight / 2) * 0.0001;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotation
+            engineGroup.rotation.y += rotationSpeed;
+            core.rotation.x -= rotationSpeed * 0.5;
+
+            // Hover
+            engineGroup.position.y = Math.sin(Date.now() * 0.001) * 0.2;
+
+            // Interaction Tilt
+            engineGroup.rotation.z += (mouseX - engineGroup.rotation.z) * 0.05;
+            engineGroup.rotation.x += (mouseY - engineGroup.rotation.x) * 0.05;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    }
+
+    init3DHero();
+
+    // ── PREMIUM GSAP ANIMATIONS ──
+    gsap.registerPlugin(ScrollTrigger);
+
+    // 1. Hero Entrance
+    const heroTl = gsap.timeline();
+    heroTl.from(".hero-text", {
+        y: 100,
+        opacity: 0,
+        duration: 1.2,
+        ease: "power4.out",
+        stagger: 0.2
+    })
+        .from(".hero-btn", {
+            scale: 0.8,
+            opacity: 0,
+            duration: 0.8,
+            ease: "back.out(1.7)",
+            stagger: 0.1
+        }, "-=0.6");
+
+    // 2. Highlights Reveal
+    gsap.from(".reveal-card", {
+        scrollTrigger: {
+            trigger: ".reveal-card",
+            start: "top 85%",
+        },
+        y: 60,
+        opacity: 0,
+        duration: 1,
+        ease: "power3.out",
+        stagger: 0.2
+    });
+
+    // 3. Calculator Reveal
+    gsap.from(".reveal-calc", {
+        scrollTrigger: {
+            trigger: ".reveal-calc",
+            start: "top 80%",
+        },
+        scale: 0.95,
+        opacity: 0,
+        duration: 1.2,
+        ease: "power2.out"
+    });
+
+    // 4. Stats Counter
+    const statsElements = document.querySelectorAll(".stat-number");
+    statsElements.forEach(stat => {
+        const targetVal = parseFloat(stat.getAttribute('data-target'));
+        const suffix = stat.getAttribute('data-suffix') || '';
+        const obj = { val: 0 };
+
+        gsap.to(obj, {
+            scrollTrigger: {
+                trigger: stat,
+                start: "top 90%",
+            },
+            val: targetVal,
+            duration: 2,
+            ease: "power1.inOut",
+            onUpdate: function () {
+                if (targetVal % 1 !== 0) {
+                    stat.innerText = obj.val.toFixed(1) + suffix;
+                } else {
+                    stat.innerText = Math.floor(obj.val) + suffix;
+                }
+            }
+        });
+    });
+
+    // 5. Partners Breathing
+    gsap.to(".partner-logo", {
+        opacity: 0.5,
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        stagger: 0.3,
+        ease: "sine.inOut"
+    });
+</script>
+
+<script>
+    let activeFuelType = 'petrol';
+
+    function setFuelType(type, price) {
+        activeFuelType = type;
+        document.getElementById('calc-price').value = price;
+        document.querySelectorAll('.fuel-type-btn').forEach(btn => {
+            btn.className = 'fuel-type-btn px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all bg-white/5 border-white/10 text-gray-500 hover:bg-white/10';
+        });
+        const active = document.getElementById('btn-' + type);
+        if (active) active.className = 'fuel-type-btn px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all bg-red-500/10 border-red-500/30 text-red-400';
+        calculateFuel();
+    }
+
+    function calculateFuel() {
+        const km = parseFloat(document.getElementById('calc-distance').value);
+        const mileage = parseFloat(document.getElementById('calc-mileage').value);
+        const price = parseFloat(document.getElementById('calc-price').value);
+
+        const resultEl = document.getElementById('calc-result');
+        const emptyEl = document.getElementById('calc-empty');
+
+        if (!km || !mileage || !price || km <= 0 || mileage <= 0) {
+            resultEl.classList.add('hidden');
+            emptyEl.classList.remove('hidden');
+            return;
+        }
+
+        const liters = km / mileage;
+        const total = liters * price;
+        const perKm = total / km;
+
+        document.getElementById('res-total').textContent = '\u20b9' + total.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+        document.getElementById('res-liters').textContent = liters.toFixed(1) + ' L';
+        document.getElementById('res-per-km').textContent = '\u20b9' + perKm.toFixed(2) + ' / km';
+
+        resultEl.classList.remove('hidden');
+        emptyEl.classList.add('hidden');
+    }
+
+</script>
+{% endblock %}

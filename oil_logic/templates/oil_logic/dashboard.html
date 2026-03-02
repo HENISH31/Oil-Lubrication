@@ -1,0 +1,312 @@
+{% extends 'oil_logic/base.html' %}
+
+{% block content %}
+<section class="max-w-7xl mx-auto px-6 py-12">
+    <div class="flex justify-between items-end mb-12">
+        <div>
+            <h1 class="text-4xl font-bold">Garage <span class="text-red-500">Dashboard</span></h1>
+            <p class="text-gray-500 mt-2">Welcome back, {{ user.username }}</p>
+        </div>
+        <button onclick="openModal()" class="btn-primary px-8 py-3 rounded-full font-bold text-sm">
+            <i class="fas fa-plus mr-2"></i> Add New Vehicle
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Stats/Vehicles -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="vehicle-list">
+                <!-- Vehicle Cards will be loaded here -->
+                {% for record in maintenance_records %}
+                <div class="glass p-8 rounded-[2rem] space-y-8 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 animate-in fade-in slide-in-from-bottom-5 vehicle-card"
+                    data-delay-index="{{ forloop.counter0 }}">
+                    <div
+                        class="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-700">
+                        <i class="fas fa-{{ record.vehicle.vehicle_type|lower }} text-8xl"></i>
+                    </div>
+
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-3xl font-black uppercase tracking-tighter">{{ record.vehicle.brand }}</h3>
+                            <p class="text-red-500 font-bold text-lg -mt-1">{{ record.vehicle.model }}</p>
+                            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mt-2">{{
+                                record.vehicle.year }} • {{ record.vehicle.engine_type }}</p>
+                        </div>
+
+                        <!-- Circular Gauge -->
+                        <div class="relative w-20 h-20">
+                            <svg class="w-full h-full transform -rotate-90">
+                                <circle cx="40" cy="40" r="34" stroke="currentColor" stroke-width="6" fill="transparent"
+                                    class="text-white/5" />
+                                <circle cx="40" cy="40" r="34" stroke="currentColor" stroke-width="6" fill="transparent"
+                                    stroke-dasharray="213.6" stroke-dashoffset="53.4"
+                                    class="text-red-500 transition-all duration-1000" />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-sm font-black text-white">75%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 pt-6 border-t border-white/5">
+                        <div class="space-y-1">
+                            <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest">Next Service</p>
+                            <p class="text-lg font-black text-white">{{ record.next_due_km }} <span
+                                    class="text-[10px] text-gray-500">KM</span></p>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest">Target Date</p>
+                            <p class="text-lg font-black text-white">{{ record.next_due_date|date:"d M Y" }}</p>
+                        </div>
+                        <div class="space-y-1 text-right">
+                            <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest">PUC Status</p>
+                            <div class="mt-1">
+                                <span
+                                    class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest {% if record.puc_expiry < now.date %}bg-red-500/10 text-red-500{% else %}bg-green-500/10 text-green-500{% endif %}">
+                                    {% if record.puc_expiry < now.date %}Expired{% else %}Valid{% endif %} </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 flex gap-3">
+                        <button
+                            class="flex-grow bg-white/5 hover:bg-red-500 text-white py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all">
+                            Details
+                        </button>
+                        <button onclick="removeVehicle('{{ record.id }}')"
+                            class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-4 rounded-xl transition-all"
+                            title="Remove Vehicle">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-2 glass p-12 rounded-3xl text-center">
+                    <p class="text-gray-500 italic">No vehicles in your garage yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Sidebar/Insights -->
+        <div class="space-y-8">
+            <div class="glass p-8 rounded-3xl space-y-6">
+                <h4 class="font-bold uppercase text-xs text-red-500 tracking-wider">Expert Tip</h4>
+                <p class="text-sm text-gray-400 leading-relaxed">
+                    Changing your oil every 5,000 KM even if the light isn't on can extend your engine's life by up to
+                    25%.
+                </p>
+            </div>
+
+            <div class="glass p-8 rounded-3xl space-y-4">
+                <h4 class="font-bold uppercase text-xs text-gray-500 tracking-wider">Recent Alerts</h4>
+                <div class="flex items-start space-x-3 text-sm">
+                    <div class="w-2 h-2 mt-1.5 rounded-full bg-yellow-500"></div>
+                    <p>Toyota Supra oil change due in 200 KM</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Add Vehicle Modal -->
+    <div id="add-vehicle-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-6">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="glass p-8 rounded-[3rem] w-full max-w-lg relative animate-scale-in">
+            <h2 class="text-3xl font-black uppercase tracking-tighter mb-2">Find Your <span
+                    class="text-red-500">Vehicle</span></h2>
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-8">Enter Registration Number</p>
+
+            <div class="space-y-6">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase tracking-widest text-gray-400">Number Plate</label>
+                    <div class="flex gap-3">
+                        <input type="text" id="plate-input" placeholder="e.g. MH 12 AB 1234"
+                            class="flex-grow bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold tracking-widest focus:border-red-500 outline-none transition-all uppercase">
+                        <button onclick="lookupPlate()" id="lookup-btn"
+                            class="btn-primary px-8 py-4 rounded-2xl font-black text-white hover:scale-105 active:scale-95 transition-all">
+                            FETCH
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Result Display (Hidden by default) -->
+                <div id="vehicle-result"
+                    class="hidden glass p-6 rounded-2xl border-white/5 space-y-4 animate-in fade-in slide-in-from-top-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p id="res-brand" class="text-[10px] font-black uppercase tracking-widest text-red-500"></p>
+                            <h3 id="res-model" class="text-2xl font-black text-white uppercase tracking-tighter"></h3>
+                            <p id="res-details" class="text-xs text-gray-500 font-bold uppercase tracking-widest"></p>
+                        </div>
+                        <div id="puc-status"
+                            class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 py-3 border-y border-white/5">
+                        <div class="space-y-1">
+                            <p class="text-[9px] text-gray-500 uppercase font-black tracking-widest">Registered Owner
+                            </p>
+                            <p id="res-owner" class="text-sm font-black text-white truncate"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-[9px] text-gray-500 uppercase font-black tracking-widest">PUC Valid Till</p>
+                            <p id="res-puc" class="text-sm font-black text-white"></p>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button onclick="addVehicle()" id="add-btn"
+                            class="w-full btn-primary py-4 rounded-xl font-black text-white uppercase tracking-widest shadow-xl shadow-red-500/10 active:scale-95 transition-all">
+                            Add to My Garage
+                        </button>
+                    </div>
+                </div>
+
+                <div id="lookup-error"
+                    class="hidden p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold text-center">
+                </div>
+            </div>
+
+            <button onclick="closeModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentVehicleData = null;
+
+        function openModal() {
+            document.getElementById('add-vehicle-modal').classList.remove('hidden');
+            document.getElementById('add-vehicle-modal').classList.add('flex');
+            document.getElementById('plate-input').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('add-vehicle-modal').classList.add('hidden');
+            document.getElementById('add-vehicle-modal').classList.remove('flex');
+            resetModal();
+        }
+
+        function resetModal() {
+            document.getElementById('plate-input').value = '';
+            document.getElementById('vehicle-result').classList.add('hidden');
+            document.getElementById('lookup-error').classList.add('hidden');
+            currentVehicleData = null;
+        }
+
+        async function lookupPlate() {
+            const plate = document.getElementById('plate-input').value.trim();
+            const btn = document.getElementById('lookup-btn');
+            if (!plate) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner animate-spin"></i>';
+            document.getElementById('lookup-error').classList.add('hidden');
+            document.getElementById('vehicle-result').classList.add('hidden');
+
+            try {
+                const response = await fetch(`/api/lookup-plate/?plate=${encodeURIComponent(plate)}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    currentVehicleData = data;
+                    currentVehicleData.plate = plate;
+
+                    document.getElementById('res-brand').textContent = data.brand;
+                    document.getElementById('res-model').textContent = data.model;
+                    document.getElementById('res-details').textContent = `${data.year} • ${data.engine_type} • ${data.vehicle_type}`;
+                    document.getElementById('res-owner').textContent = data.owner_name;
+                    document.getElementById('res-puc').textContent = data.puc_expiry;
+
+                    const pucStatus = document.getElementById('puc-status');
+                    const expiry = new Date(data.puc_expiry);
+                    const today = new Date();
+                    const isExpired = expiry < today;
+
+                    pucStatus.textContent = isExpired ? 'PUC EXPIRED' : 'PUC VALID';
+                    pucStatus.className = `px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${isExpired ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`;
+
+                    document.getElementById('vehicle-result').classList.remove('hidden');
+                } else {
+                    document.getElementById('lookup-error').textContent = data.message || 'Vehicle not found.';
+                    document.getElementById('lookup-error').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('lookup-error').textContent = 'Network error. Try again.';
+                document.getElementById('lookup-error').classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'FETCH';
+            }
+        }
+
+        async function removeVehicle(recordId) {
+            if (!confirm('Are you sure you want to remove this vehicle from your garage?')) return;
+
+            try {
+                const response = await fetch(`/api/maintenance/${recordId}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                });
+
+                if (response.status === 204) {
+                    location.reload();
+                } else {
+                    alert('Failed to remove vehicle.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Network error.');
+            }
+        }
+
+        async function addVehicle() {
+            if (!currentVehicleData) return;
+            const btn = document.getElementById('add-btn');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner animate-spin"></i>';
+
+            try {
+                const response = await fetch('/api/add-by-plate/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        plate: currentVehicleData.plate,
+                        vehicle_id: currentVehicleData.vehicle_id,
+                        puc_expiry: currentVehicleData.puc_expiry
+                    })
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert(data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = 'Add to My Garage';
+                }
+            } catch (err) {
+                console.error(err);
+                btn.disabled = false;
+                btn.innerHTML = 'Add to My Garage';
+            }
+        }
+
+        // Initialize animation delays
+        document.querySelectorAll('.vehicle-card').forEach(card => {
+            const index = card.dataset.delayIndex || 0;
+            card.style.animationDelay = `${(parseInt(index) + 1) * 100}ms`;
+        });
+    </script>
+</section>
+
+{% csrf_token %}
+{% endblock %}

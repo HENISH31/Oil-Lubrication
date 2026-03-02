@@ -1,0 +1,64 @@
+{% extends 'oil_logic/base.html' %}
+
+{% block content %}
+<section class="max-w-md mx-auto mt-20 px-6">
+    <div class="glass p-10 rounded-3xl shadow-2xl space-y-8 animate-slide-up">
+        <div class="text-center">
+            <h2 class="text-3xl font-bold">Register <span class="text-red-500">Engine</span></h2>
+            <p class="text-gray-500 mt-2">Start your maintenance journey today</p>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            {% for field in form %}
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">{{ field.label }}</label>
+                <div
+                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus-within:border-red-500 transition">
+                    {{ field }}
+                </div>
+                {% if field.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit"
+                class="btn-primary w-full py-4 rounded-xl font-bold text-white uppercase tracking-widest">
+                Initialize Account
+            </button>
+        </form>
+
+        <div class="relative flex py-5 items-center">
+            <div class="flex-grow border-t border-white/10"></div>
+            <span class="flex-shrink mx-4 text-gray-500 text-xs uppercase font-bold">Or</span>
+            <div class="flex-grow border-t border-white/10"></div>
+        </div>
+
+        {% load socialaccount %}
+        <a href="{% provider_login_url 'google' %}"
+            class="glass w-full py-4 rounded-xl font-bold text-white flex items-center justify-center space-x-3 hover:bg-white/5 transition">
+            <i class="fab fa-google text-red-500"></i>
+            <span>Register with Google</span>
+        </a>
+
+        <p class="text-center text-sm text-gray-500">
+            Already have an account? <a href="/login" class="text-red-400 hover:underline">Login here</a>
+        </p>
+    </div>
+</section>
+
+<style>
+    input {
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        width: 100% !important;
+        color: white !important;
+    }
+
+    .helptext,
+    .helptext ul {
+        display: none;
+    }
+</style>
+{% endblock %}
