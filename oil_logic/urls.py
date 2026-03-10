@@ -12,9 +12,12 @@ router.register(r'maintenance', views.MaintenanceViewSet, basename='maintenance'
 urlpatterns = [
     path('', views.home, name='home'),
     path('recommendations/', views.recommendation_page, name='recommendation_page'),
+    path('garage/', views.garage, name='garage'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('shop/', views.shop_page, name='shop_page'),
+    path('brands/', views.brands_view, name='brands'),
     path('academy/', views.academy, name='academy'),
+    path('showcase/', views.showcase, name='showcase'),
     path('education/', views.academy, name='academy'),
     path('login/', auth_views.LoginView.as_view(template_name='oil_logic/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),

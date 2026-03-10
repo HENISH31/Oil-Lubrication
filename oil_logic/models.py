@@ -4,6 +4,13 @@ from django.utils import timezone
 from datetime import timedelta
 
 class Oil(models.Model):
+    VEHICLE_TYPES = [
+        ('Car', 'Car'),
+        ('Bike', 'Bike'),
+        ('Scooter', 'Scooter'),
+        ('Truck', 'Truck'),
+    ]
+
     OIL_TYPES = [
         ('Mineral', 'Mineral'),
         ('Synthetic', 'Synthetic'),
@@ -13,19 +20,39 @@ class Oil(models.Model):
     brand = models.CharField(max_length=100)
     viscosity = models.CharField(max_length=20)  # e.g., 5W-30
     oil_type = models.CharField(max_length=20, choices=OIL_TYPES)
+    vehicle_type = models.CharField(max_length=20, choices=VEHICLE_TYPES, default='Car')
     api_rating = models.CharField(max_length=50, blank=True, null=True)
     jaso_rating = models.CharField(max_length=50, blank=True, null=True)
     change_interval_km = models.IntegerField(default=5000)
     change_interval_months = models.IntegerField(default=6)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     volume_liters = models.FloatField(default=1.0, help_text="Volume in Liters")
+    # Volume-specific pricing
+    volume_1L_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Price for 1L")
+    volume_4L_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Price for 4L", blank=True, null=True)
+    volume_5L_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Price for 5L", blank=True, null=True)
     image_url = models.URLField(max_length=500, blank=True, null=True)
+    image = models.ImageField(upload_to='oils/', blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     stock_count = models.IntegerField(default=100)
     rating = models.FloatField(default=4.5)
 
     def __str__(self):
         return f"{self.brand} {self.viscosity} ({self.oil_type})"
+
+class OilVariant(models.Model):
+    """Store volume and price combinations for each oil product"""
+    oil = models.ForeignKey(Oil, on_delete=models.CASCADE, related_name='variants')
+    volume_liters = models.FloatField(choices=[(1.0, '1L'), (4.0, '4L'), (5.0, '5L')])
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock_count = models.IntegerField(default=100)
+    image = models.ImageField(upload_to='oil_variants/', blank=True, null=True)
+    
+    class Meta:
+        unique_together = ('oil', 'volume_liters')
+    
+    def __str__(self):
+        return f"{self.oil.brand} {self.oil.viscosity} - {self.volume_liters}L @ ₹{self.price}"
 
 class Vehicle(models.Model):
     VEHICLE_TYPES = [
@@ -102,6 +129,8 @@ class Maintenance(models.Model):
     driving_condition = models.CharField(max_length=20, choices=DRIVING_CONDITIONS, default='Mixed')
     mileage_range = models.CharField(max_length=20, choices=MILEAGE_RANGES, default='0-50k')
     preferred_frequency = models.CharField(max_length=20, choices=OIL_CHANGE_FREQUENCIES, default='5-6m')
+    color = models.CharField(max_length=7, default='#3B82F6', help_text="Vehicle color in Hex (e.g. #FF0000)")
+    current_km = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
         if not self.next_due_km:
@@ -119,6 +148,17 @@ class Maintenance(models.Model):
 
     def __str__(self):
         return f"Maintenance for {self.vehicle} by {self.user.username}"
+
+class ServiceRecord(models.Model):
+    maintenance = models.ForeignKey(Maintenance, on_delete=models.CASCADE, related_name='service_records')
+    date = models.DateField(default=timezone.now)
+    oil_type = models.CharField(max_length=100)
+    km = models.IntegerField()
+    service_center = models.CharField(max_length=255, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Service at {self.km} KM - {self.maintenance.vehicle}"
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     phone_number = models.CharField(max_length=15, blank=True, null=True)
@@ -130,10 +170,12 @@ class CartItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_items')
     oil = models.ForeignKey(Oil, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    volume_liters = models.FloatField(default=1.0, help_text="Selected volume in liters")
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Price per unit at time of purchase")
     added_at = models.DateTimeField(auto_now_add=True)
 
     def total_price(self):
-        return self.oil.price * self.quantity
+        return self.price * self.quantity
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')

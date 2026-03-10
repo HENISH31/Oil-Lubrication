@@ -1,0 +1,108 @@
+{% extends 'oil_logic/base.html' %}
+
+{% block content %}
+<section class="max-w-7xl mx-auto px-6 py-12">
+    <!-- Header -->
+    <div class="flex justify-between items-end mb-16">
+        <div>
+            <h1 class="text-5xl font-black italic uppercase tracking-tighter mb-4">
+                My <span class="text-red-500">Garage</span>
+            </h1>
+            <p class="text-gray-500 font-bold uppercase tracking-[0.3em] text-[10px]">
+                Managed Fleet • {{ total_vehicles }} Active Units
+            </p>
+        </div>
+        <a href="{% url 'dashboard' %}"
+            class="btn-primary px-8 py-4 rounded-2xl font-black text-white text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
+            <i class="fas fa-search mr-3"></i> Add Vehicle
+        </a>
+    </div>
+
+    <!-- Fleet Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for record in maintenance_records %}
+        <div
+            class="glass-premium p-8 rounded-[2.5rem] border-white/5 space-y-6 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border-white/5 hover:border-red-500/30 shadow-2xl">
+            <!-- Background Glow -->
+            <div
+                class="absolute -top-24 -right-24 w-48 h-48 bg-red-500/5 blur-[80px] group-hover:bg-red-500/10 transition-all">
+            </div>
+
+            <div class="flex justify-between items-start relative z-10">
+                <div>
+                    <h3 class="text-2xl font-black italic uppercase tracking-tighter leading-none mb-1">
+                        {{ record.vehicle.brand }}
+                    </h3>
+                    <p class="text-red-500 font-black text-xs uppercase tracking-[0.2em]">{{ record.vehicle.model }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[8px] text-gray-600 font-black uppercase tracking-widest mb-1">Plate</p>
+                    <p
+                        class="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-xs font-black text-white tracking-widest">
+                        {{ record.license_plate }}</p>
+                </div>
+            </div>
+
+            <!-- Specs Bar -->
+            <div class="flex gap-2 relative z-10">
+                <span
+                    class="px-3 py-1 bg-white/[0.02] border border-white/5 rounded-md text-[8px] font-black uppercase tracking-widest text-gray-500">
+                    {{ record.vehicle.year }}
+                </span>
+                <span
+                    class="px-3 py-1 bg-white/[0.02] border border-white/5 rounded-md text-[8px] font-black uppercase tracking-widest text-gray-500">
+                    {{ record.vehicle.engine_type }}
+                </span>
+            </div>
+
+            <!-- Action Area -->
+            <div class="pt-6 border-t border-white/5 flex gap-3 relative z-10">
+                <button onclick="removeVehicle('{{ record.id }}')"
+                    class="px-5 py-4 bg-white/5 hover:bg-red-500/10 text-gray-500 hover:text-red-500 rounded-2xl transition-all border border-white/5 hover:border-red-500/20">
+                    <i class="fas fa-trash-alt text-sm"></i>
+                </button>
+                <a href="{% url 'dashboard' %}?plate={{ record.license_plate }}"
+                    class="flex-grow bg-white/5 hover:bg-white/10 text-white py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all border border-white/5 flex items-center justify-center">
+                    View Details
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div
+            class="col-span-full py-32 text-center glass-premium rounded-[3.5rem] border-dashed border-white/5 border-2">
+            <i class="fas fa-warehouse text-6xl text-white/5 mb-6"></i>
+            <p class="text-gray-500 font-bold uppercase tracking-[0.4em] text-[12px] mb-8">Garage Empty. Deployment
+                Required.</p>
+            <a href="{% url 'dashboard' %}"
+                class="btn-primary px-12 py-5 rounded-2xl text-white font-black uppercase tracking-widest text-xs">
+                Launch Intelligence Lookup
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<script>
+    async function removeVehicle(recordId) {
+        if (!confirm('Permanently remove this unit from the tactical fleet?')) return;
+
+        try {
+            const response = await fetch(`/api/maintenance/${recordId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+
+            if (response.status === 204) {
+                location.reload();
+            } else {
+                alert('De-authentication failed.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Signal failure. Check connection.');
+        }
+    }
+</script>
+{% endblock %}

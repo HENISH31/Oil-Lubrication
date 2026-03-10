@@ -228,7 +228,7 @@
                 <div
                     class="hidden md:flex items-center space-x-8 text-xs font-bold uppercase tracking-widest text-gray-400">
                     <a href="{% url 'home' %}" class="hover:text-white transition">Home</a>
-                    <a href="{% url 'dashboard' %}" class="hover:text-white transition">Garage</a>
+                    <a href="{% url 'garage' %}" class="hover:text-white transition">Garage</a>
                     <a href="{% url 'recommendation_page' %}" class="hover:text-white transition">Recommender</a>
                     <a href="{% url 'shop_page' %}" class="hover:text-white transition">Shop</a>
                     <a href="{% url 'academy' %}" class="hover:text-white transition">Academy</a>
@@ -274,7 +274,7 @@
                                 </div>
 
                                 <div class="flex flex-col gap-2">
-                                    <a href="{% url 'dashboard' %}"
+                                    <a href="{% url 'garage' %}"
                                         class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition text-gray-400 hover:text-white">
                                         <i class="fas fa-warehouse text-xs"></i>
                                         <span>My Garage</span>
@@ -345,7 +345,7 @@
         </button>
         <div class="flex flex-col items-center space-y-8 text-2xl font-black uppercase tracking-widest">
             <a href="{% url 'home' %}" onclick="toggleMenu()">Home</a>
-            <a href="{% url 'dashboard' %}" onclick="toggleMenu()">My Garage</a>
+            <a href="{% url 'garage' %}" onclick="toggleMenu()">My Garage</a>
             <a href="{% url 'recommendation_page' %}" onclick="toggleMenu()">Recommender</a>
             <a href="{% url 'shop_page' %}" onclick="toggleMenu()">Shop</a>
             <a href="{% url 'academy' %}" onclick="toggleMenu()">Academy</a>

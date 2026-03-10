@@ -1,0 +1,18 @@
+{% extends 'oil_logic/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen bg-[#050505] text-white p-8">
+    <h1 class="text-3xl font-bold mb-8">Oil Brands</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for brand in brands %}
+        <div class="bg-[#0e0e0e] border border-white/5 rounded-3xl p-6 hover:border-red-500/35 transition-all">
+            <h2 class="text-xl font-bold">{{ brand }}</h2>
+            <p class="text-gray-400 mt-2">Explore oils from {{ brand }}</p>
+        </div>
+        {% empty %}
+        <p>No brands found.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Oil, Vehicle, Maintenance
+from .models import Oil, Vehicle, Maintenance, OilVariant
 from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
@@ -7,7 +7,14 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email']
 
+class OilVariantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OilVariant
+        fields = ['id', 'volume_liters', 'price', 'stock_count', 'image']
+
 class OilSerializer(serializers.ModelSerializer):
+    variants = OilVariantSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Oil
         fields = '__all__'
