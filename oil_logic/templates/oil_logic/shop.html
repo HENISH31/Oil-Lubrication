@@ -32,8 +32,8 @@
                         {% for brand in brand_options %}
                         <div class="brand-item px-3 py-2.5 rounded-lg bg-white/5 hover:bg-red-500/15 border border-white/5 hover:border-red-500/30 cursor-pointer transition-all"
                             data-brand="{{ brand|lower }}" onclick="filterByBrand('{{ brand }}')">
-                            <span class="text-[11px] font-semibold text-gray-300 hover:text-white transition-colors">{{
-                                brand }}</span>
+                            <span class="text-[11px] font-semibold text-gray-300 hover:text-white transition-colors">{{ brand }}
+                                </span>
                         </div>
                         {% endfor %}
                     </div>
@@ -45,11 +45,9 @@
                 <div>
                     <p class="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500 mb-3">Price Range</p>
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm font-black text-white">₹<span id="price-min-display">{{ min_price
-                                }}</span></span>
+                        <span class="text-sm font-black text-white">₹<span id="price-min-display">{{ min_price }}</span></span>
                         <span class="text-[9px] text-gray-600">—</span>
-                        <span class="text-sm font-black text-white">₹<span id="price-max-display">{{ max_price
-                                }}</span></span>
+                        <span class="text-sm font-black text-white">₹<span id="price-max-display">{{ max_price }}</span></span>
                     </div>
                     <div class="relative h-5 flex items-center">
                         <div class="absolute w-full h-1.5 bg-white/10 rounded-full"></div>
@@ -77,8 +75,7 @@
                         {% for grade in grade_options %}
                         <div class="grade-item px-2.5 py-2 rounded-lg bg-white/5 hover:bg-red-500/15 border border-white/5 hover:border-red-500/30 cursor-pointer transition-all text-center"
                             onclick="filterByGrade('{{ grade }}')">
-                            <span class="text-[10px] font-bold text-gray-400 hover:text-white transition-colors">{{
-                                grade }}</span>
+                            <span class="text-[10px] font-bold text-gray-400 hover:text-white transition-colors">{{ grade }}</span>
                         </div>
                         {% endfor %}
                     </div>
@@ -95,8 +92,7 @@
                         <label
                             class="volume-label flex flex-col items-center py-2.5 rounded-xl cursor-pointer transition-all border text-center {{ is_selected|yesno:'border-red-500 bg-red-500/15,border-white/5 hover:border-red-500/30' }}">
                             <input type="checkbox" name="volume" value="{{ vol }}" class="sr-only"
-                                onchange="updateVolumeLabel(this); this.form.submit()" {{
-                                vol|is_in_attr:selected_volumes }}>
+                                onchange="updateVolumeLabel(this); this.form.submit()" {{ vol|is_in_attr:selected_volumes }}>
                             <span class="text-xs font-black text-white">{{ vol }}L</span>
                         </label>
                         {% endwith %}
@@ -127,8 +123,7 @@
                         class="lg:hidden flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[11px] font-black uppercase tracking-widest hover:bg-red-500/10 hover:border-red-500/30 transition-all">
                         <i class="fas fa-sliders-h"></i> Filters
                     </button>
-                    <p class="text-sm text-gray-500 font-bold"><span class="text-white font-black">{{ oils|length
-                            }}</span> of <span class="text-white font-black">{{ total_oils }}</span> products</p>
+                    <p class="text-sm text-gray-500 font-bold"><span class="text-white font-black">{{ oils|length }}</span> of <span class="text-white font-black">{{ total_oils }}</span> products</p>
                 </div>
 
                 <div class="flex items-center gap-3">
@@ -184,10 +179,8 @@
                     <div class="p-5 flex flex-col flex-1">
                         <p class="text-[9px] font-black uppercase tracking-[0.3em] text-red-500 mb-1">{{ oil.brand }}
                         </p>
-                        <h3 class="text-sm font-black uppercase tracking-tight text-white leading-snug mb-1">{{
-                            oil.brand }} {{ oil.viscosity }} {{ oil.oil_type }}</h3>
-                        <p class="text-[10px] text-gray-400 font-medium mb-3 line-clamp-1">{% if oil.description %}{{
-                            oil.description }}{% else %}{{ oil.brand }} premium {{ oil.oil_type }} lubricant.{% endif %}
+                        <h3 class="text-sm font-black uppercase tracking-tight text-white leading-snug mb-1">{{ oil.brand }} {{ oil.viscosity }} {{ oil.oil_type }}</h3>
+                        <p class="text-[10px] text-gray-400 font-medium mb-3 line-clamp-1">{% if oil.description %}{{ oil.description }}{% else %}{{ oil.brand }} premium {{ oil.oil_type }} lubricant.{% endif %}
                         </p>
 
                         <div class="flex items-center gap-1.5 mb-4">

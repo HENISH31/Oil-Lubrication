@@ -80,6 +80,7 @@ def shop_page(request):
     
     return render(request, 'oil_logic/shop.html', {
         'oils': oils,
+        'total_oils': Oil.objects.count(),
         'brand_counts': brand_counts,
         'selected_brands': brands,
         'selected_grades': grades,
