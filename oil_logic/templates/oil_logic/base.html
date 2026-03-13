@@ -206,6 +206,63 @@
         .page-transition {
             opacity: 0;
         }
+
+        /* ── Modern Button Effect (Uiverse inspired) ── */
+        .cssbuttons-io-button {
+            background: #FF4D4D;
+            color: white;
+            font-family: inherit;
+            padding: 0.35em;
+            padding-left: 1.2em;
+            font-size: 11px;
+            font-weight: 800;
+            border-radius: 12px;
+            border: none;
+            letter-spacing: 0.15em;
+            display: flex;
+            align-items: center;
+            box-shadow: inset 0 0 1.6em -0.6em #B30000;
+            overflow: hidden;
+            position: relative;
+            height: 2.8em;
+            padding-right: 3.3em;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .cssbuttons-io-button .icon {
+            background: white;
+            margin-left: 1em;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 2.2em;
+            width: 2.2em;
+            border-radius: 10px;
+            box-shadow: 0.1em 0.1em 0.6em 0.2em rgba(179, 0, 0, 0.2);
+            right: 0.3em;
+            transition: all 0.3s;
+        }
+
+        .cssbuttons-io-button:hover .icon {
+            width: calc(100% - 0.6em);
+        }
+
+        .cssbuttons-io-button .icon svg {
+            width: 1.1em;
+            transition: transform 0.3s;
+            color: #FF4D4D;
+        }
+
+        .cssbuttons-io-button:hover .icon svg {
+            transform: translateX(0.1em);
+        }
+
+        .cssbuttons-io-button:active .icon {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 
@@ -300,9 +357,16 @@
                         </div>
                     </div>
                     {% else %}
-                    <a href="{% url 'account_signup' %}"
-                        class="btn-primary px-6 py-3 rounded-full text-white tracking-widest text-xs font-bold">Get
-                        Started</a>
+                    <a href="{% url 'account_signup' %}" class="cssbuttons-io-button">
+                        Get Started
+                        <div class="icon">
+                            <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                                    fill="currentColor"></path>
+                            </svg>
+                        </div>
+                    </a>
                     {% endif %}
                 </div>
 
@@ -347,15 +411,25 @@
             <a href="{% url 'home' %}" onclick="toggleMenu()">Home</a>
             <a href="{% url 'garage' %}" onclick="toggleMenu()">My Garage</a>
             <a href="{% url 'recommendation_page' %}" onclick="toggleMenu()">Recommender</a>
-            <a href="{% url 'shop_page' %}" onclick="toggleMenu()">Shop</a>
             <a href="{% url 'academy' %}" onclick="toggleMenu()">Academy</a>
+            <a href="{% url 'shop_page' %}" onclick="toggleMenu()">Shop</a>
+
             {% if user.is_authenticated %}
             <form method="post" action="{% url 'account_logout' %}">
                 {% csrf_token %}
                 <button type="submit" class="text-red-500">Sign Out</button>
             </form>
             {% else %}
-            <a href="{% url 'account_signup' %}" class="text-red-500" onclick="toggleMenu()">Get Started</a>
+            <a href="{% url 'account_signup' %}" class="cssbuttons-io-button" onclick="toggleMenu()">
+                Get Started
+                <div class="icon">
+                    <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                            fill="currentColor"></path>
+                    </svg>
+                </div>
+            </a>
             {% endif %}
         </div>
     </div>
