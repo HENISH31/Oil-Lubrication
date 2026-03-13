@@ -1,5 +1,23 @@
 from django.contrib import admin
-from .models import Oil, Vehicle, Maintenance, VehicleRegistration, OilVariant, CartItem
+from .models import Oil, OilVariant, Vehicle, Maintenance, UserProfile, CartItem, Order, OrderItem, VehicleRegistration, ServiceRecord, VehicleQuery, RecommendationFeedback
+
+@admin.register(VehicleQuery)
+class VehicleQueryAdmin(admin.ModelAdmin):
+    list_display = ('brand', 'model', 'year', 'created_at', 'user')
+    list_filter = ('brand', 'created_at')
+    search_fields = ('brand', 'model')
+
+@admin.register(RecommendationFeedback)
+class RecommendationFeedbackAdmin(admin.ModelAdmin):
+    list_display = ('query', 'recommended_oil', 'selected_oil', 'is_helpful', 'rating', 'timestamp')
+    list_filter = ('is_helpful', 'rating', 'timestamp')
+    actions = ['retrain_model_action']
+
+    def retrain_model_action(self, request, queryset):
+        from django.core.management import call_command
+        call_command('retrain_model')
+        self.message_user(request, "Model retraining triggered successfully.")
+    retrain_model_action.short_description = "Retrain AI Model using current feedback"
 
 @admin.register(Oil)
 class OilAdmin(admin.ModelAdmin):

@@ -30,6 +30,8 @@ urlpatterns = [
     path('api/lookup-plate/', views.lookup_vehicle_by_plate, name='lookup_vehicle_by_plate'),
     path('api/add-by-plate/', views.add_vehicle_by_plate, name='add_vehicle_by_plate'),
     path('api/ai-chat/', views.ai_chat, name='ai_chat'),
+    path('api/recommend-ai/', views.AIRecommendationView.as_view(), name='ai-recommend'),
+    path('api/feedback/', views.SubmitFeedbackView.as_view(), name='ai-feedback'),
     path('api/', include(router.urls)),
     path('api/brands/', views.BrandListView.as_view(), name='brand-list'),
     path('api/models/', views.ModelListView.as_view(), name='model-list'),

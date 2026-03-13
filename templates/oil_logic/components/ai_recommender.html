@@ -1,0 +1,109 @@
+<!-- AI Recommendation Example Component -->
+<div id="ai-recommendation-container" class="p-6 bg-slate-900 rounded-xl border border-slate-700 shadow-2xl">
+    <h3 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-4">
+        AI-Powered Oil Match
+    </h3>
+    
+    <form id="recommendation-form" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <input type="text" name="brand" placeholder="Brand (e.g. Toyota)" class="bg-slate-800 border-slate-600 rounded-lg p-2 text-white">
+            <input type="text" name="model" placeholder="Model (e.g. Corolla)" class="bg-slate-800 border-slate-600 rounded-lg p-2 text-white">
+            <input type="number" name="year" placeholder="Year" class="bg-slate-800 border-slate-600 rounded-lg p-2 text-white">
+            <input type="number" name="odometer_km" placeholder="Mileage (KM)" class="bg-slate-800 border-slate-600 rounded-lg p-2 text-white">
+        </div>
+        
+        <select name="driving_condition" class="w-full bg-slate-800 border-slate-600 rounded-lg p-2 text-white">
+            <option value="Mixed">Mixed (City/Highway)</option>
+            <option value="City">Mostly City / Heavy Traffic</option>
+            <option value="Highway">Highway / Long Drives</option>
+            <option value="Off-road">Off-road / Severe Conditions</option>
+        </select>
+
+        <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold transition-all transform hover:scale-105">
+            Get AI Recommendation
+        </button>
+    </form>
+
+    <!-- Results Section (Hidden initially) -->
+    <div id="ai-results" class="mt-8 hidden space-y-4 animate-fade-in">
+        <div class="p-4 bg-slate-800 border-l-4 border-blue-500 rounded-r-lg">
+            <p class="text-sm text-blue-400 font-mono" id="system-tag"></p>
+            <h4 class="text-xl font-bold" id="primary-oil-name"></h4>
+            <p class="text-slate-300 italic text-sm mt-2" id="ai-explanation"></p>
+        </div>
+        
+        <div id="feedback-section" class="mt-4 p-4 bg-slate-800 rounded-lg border border-slate-700">
+            <p class="text-xs text-slate-400 mb-2">Was this helpful?</p>
+            <div class="flex gap-2">
+                <button onclick="submitFeedback(5)" class="px-3 py-1 bg-emerald-900/50 hover:bg-emerald-800 rounded border border-emerald-700 text-emerald-300">Yes</button>
+                <button onclick="submitFeedback(1)" class="px-3 py-1 bg-rose-900/50 hover:bg-rose-800 rounded border border-rose-700 text-rose-300">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentQueryId = null;
+
+    document.getElementById('recommendation-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        try {
+            const response = await fetch('/api/recommend-ai/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            
+            currentQueryId = result.query_id;
+            
+            // Display Results
+            document.getElementById('ai-results').classList.remove('hidden');
+            document.getElementById('system-tag').innerText = `${result.system} Recommendation (Confidence: ${result.confidence * 100}%)`;
+            document.getElementById('primary-oil-name').innerText = `${result.recommendation.brand} ${result.recommendation.viscosity}`;
+            document.getElementById('ai-explanation').innerText = result.explanation;
+            
+        } catch (err) {
+            console.error("AI Recommendation failed:", err);
+        }
+    };
+
+    async function submitFeedback(rating) {
+        if (!currentQueryId) return;
+        
+        await fetch('/api/feedback/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                query_id: currentQueryId,
+                rating: rating
+            })
+        });
+        
+        document.getElementById('feedback-section').innerHTML = "<p class='text-emerald-400 text-sm'>Thank you for your feedback!</p>";
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>

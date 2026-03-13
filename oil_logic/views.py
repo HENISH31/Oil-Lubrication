@@ -191,23 +191,131 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
 
+    def _get_contextual_oil_data(self, oil, vehicle_type, capacity):
+        """Helper to inject rec_price and rec_volume into oil data"""
+        if not oil: return None
+        
+        # Determine recommended volume
+        rec_vol = 1.0 # Default (Bikes)
+        if vehicle_type == 'Car':
+            rec_vol = 4.0
+            if capacity and capacity > 4.0:
+                rec_vol = 5.0
+        
+        # Determine price based on user rules
+        # 1L=850, 4L=3200, 5L=3900
+        price_map = {1.0: 850.00, 4.0: 3200.00, 5.0: 3900.00}
+        rec_price = price_map.get(rec_vol, 850.00)
+        
+        # Serialize and inject
+        data = OilSerializer(oil).data
+        data['rec_price'] = rec_price
+        data['rec_volume'] = rec_vol
+        return data
+
     @action(detail=False, methods=['get'])
     def recommendations(self, request):
         brand = request.query_params.get('brand')
         model = request.query_params.get('model')
-        year = request.query_params.get('year')
+        year_raw = request.query_params.get('year')
         
         # New parameters
         driving_condition = request.query_params.get('driving_condition', 'Mixed')
         mileage_range = request.query_params.get('mileage_range', '0-50k')
         preferred_frequency = request.query_params.get('preferred_frequency', '5-6m')
+        vehicle_type = request.query_params.get('vehicle_type', 'Car')
 
-        if not all([brand, model, year]):
+        # 1. Proactive Input Validation
+        if not all([brand, model, year_raw]):
             return Response({"error": "Brand, model, and year are required"}, status=status.HTTP_400_BAD_REQUEST)
         
+        try:
+            year = int(year_raw)
+        except (ValueError, TypeError):
+            return Response({"error": "Field 'year' must be a valid number"}, status=status.HTTP_400_BAD_REQUEST)
+        
         vehicles = Vehicle.objects.filter(brand__iexact=brand, model__iexact=model, year=year)
+        
+        # Global absolute fallback oil (Use a common high-rating synthetic as base)
+        global_fallback_oil = Oil.objects.filter(rating__gte=4.5).order_by('-rating').first() or Oil.objects.first()
+        
+        # fallback logic if no exact vehicle found
         if not vehicles.exists():
-            return Response({"error": "Vehicle not found"}, status=status.HTTP_404_NOT_FOUND)
+            print(f"DEBUG: No exact vehicle found for {brand} {model} {year}. Triggering AI fallback.")
+            try:
+                from .ai_engine import AIOilRecommender
+                ai_recommender = AIOilRecommender()
+                
+                if not ai_recommender.is_available():
+                    print("DEBUG: AI Model not available. Using standard defaults.")
+                
+                # Map mileage range to odometer_km
+                mileage_map = {
+                    '0-50k': 25000,
+                    '50k-100k': 75000,
+                    '100k-150k': 125000,
+                    'Above-150k': 175000
+                }
+                odometer = mileage_map.get(mileage_range, 30000)
+                
+                # Prepare query for AI
+                try:
+                    year_int = int(year)
+                except (ValueError, TypeError):
+                    year_int = 2024 # Fallback to current if invalid
+                
+                query_data = {
+                    'brand': brand,
+                    'model': model,
+                    'year': year_int,
+                    'driving_condition': driving_condition,
+                    'odometer_km': odometer,
+                    'engine_type': 'Petrol', # Guess if not provided
+                    'displacement_cc': 1500 # Guess if not provided
+                }
+                
+                # Get AI recommendation
+                best_oil_id, confidence = ai_recommender.predict(query_data)
+                print(f"DEBUG: AI Predicted Oil ID: {best_oil_id} with confidence {confidence}")
+                
+                primary_oil = Oil.objects.filter(id=best_oil_id).first() if best_oil_id else None
+                if not primary_oil:
+                    # AI failed or returned invalid ID, try matching a standard viscosity
+                    target_viscosity = "5W-30" # Standard default
+                    primary_oil = Oil.objects.filter(viscosity=target_viscosity).order_by('-rating').first()
+                
+                if not primary_oil:
+                    primary_oil = global_fallback_oil
+                
+                # Synthesize options
+                target_viscosity = primary_oil.viscosity if primary_oil else "5W-30"
+                premium_oil = Oil.objects.filter(viscosity=target_viscosity, oil_type='Synthetic').order_by('-price').first()
+                economy_oil = Oil.objects.filter(viscosity=target_viscosity, oil_type__in=['Mineral', 'Semi-Synthetic']).order_by('price').first()
+                
+                # Ensure recommendations are never null
+                if not target_viscosity: target_viscosity = "5W-30"
+                if not premium_oil: premium_oil = primary_oil
+                if not economy_oil: economy_oil = primary_oil
+
+                # Create a virtual vehicle result
+                virtual_v = {
+                    'id': 0,
+                    'brand': brand,
+                    'model': model,
+                    'year': year,
+                    'engine_type': f'{vehicle_type} (AI Optimized)',
+                    'displacement_cc': 'Unknown',
+                    'variant_name': 'AI Synthesis',
+                    'recommendations': {
+                        'primary': self._get_contextual_oil_data(primary_oil, vehicle_type, 2.0),
+                        'premium': self._get_contextual_oil_data(premium_oil, vehicle_type, 2.0),
+                        'economy': self._get_contextual_oil_data(economy_oil, vehicle_type, 2.0),
+                    }
+                }
+                return Response([virtual_v])
+            except Exception as e:
+                print(f"FATAL RECO ERROR: {str(e)}")
+                return Response({"error": "Failed to analyze vehicle data. Please contact support."}, status=500)
             
         data = []
         for v in vehicles:
@@ -231,6 +339,7 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
             # 1. Primary Oil (The refined recommendation)
             primary_oil = Oil.objects.filter(viscosity=target_viscosity).order_by('-rating').first()
             if not primary_oil: primary_oil = base_oil
+            if not primary_oil: primary_oil = global_fallback_oil
 
             # 2. Premium Oil (Highest price/rating Synthetic)
             # Exclude primary oil to ensure variety
@@ -256,9 +365,9 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
             if not economy_oil: economy_oil = primary_oil
 
             v_data['recommendations'] = {
-                'primary': OilSerializer(primary_oil).data if primary_oil else None,
-                'premium': OilSerializer(premium_oil).data if premium_oil else None,
-                'economy': OilSerializer(economy_oil).data if economy_oil else None,
+                'primary': self._get_contextual_oil_data(primary_oil, v.vehicle_type, v.oil_capacity),
+                'premium': self._get_contextual_oil_data(premium_oil, v.vehicle_type, v.oil_capacity),
+                'economy': self._get_contextual_oil_data(economy_oil, v.vehicle_type, v.oil_capacity),
             }
             data.append(v_data)
 
@@ -443,8 +552,99 @@ def ai_chat(request):
             
         response_text = AIAgentService.get_response(user_message, request.user)
         
-        return JsonResponse({
-            'status': 'success',
-            'response': response_text
+
+from .ai_engine import AIOilRecommender
+from .models import VehicleQuery, RecommendationFeedback
+
+recommender = AIOilRecommender()
+
+class AIRecommendationView(generics.GenericAPIView):
+    def post(self, request):
+        data = request.data
+        brand = data.get('brand')
+        model = data.get('model')
+        year = data.get('year')
+        
+        if not all([brand, model, year]):
+            return Response({"error": "Missing vehicle identification"}, status=400)
+
+        # Log the query
+        query = VehicleQuery.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            brand=brand,
+            model=model,
+            year=year,
+            engine_type=data.get('engine_type'),
+            displacement_cc=data.get('displacement_cc', 0),
+            odometer_km=data.get('odometer_km', 0),
+            driving_condition=data.get('driving_condition'),
+            typical_trip_length=data.get('typical_trip_length'),
+            atmosphere_temp=data.get('atmosphere_temp'),
+            budget_preference=data.get('budget_preference')
+        )
+
+        # AI Prediction
+        oil_id, confidence = recommender.predict(data)
+        
+        # Hybrid Fallback Logic
+        use_ai = recommender.is_available() and confidence > 0.6
+        explanation = ""
+        
+        if use_ai:
+            primary_oil = Oil.objects.get(id=oil_id)
+            alternatives = recommender.predict_with_alternatives(data, top_n=3)
+            alternative_oils = Oil.objects.filter(id__in=[a['oil_id'] for a in alternatives])
+            explanation = recommender.get_explanation(data, primary_oil)
+        else:
+            # Fallback to rule-based logic (borrowed from existing implementation)
+            vehicles = Vehicle.objects.filter(brand__iexact=brand, model__iexact=model, year=year)
+            if vehicles.exists():
+                v = vehicles.first()
+                primary_oil = v.recommended_oil
+                alternative_oils = Oil.objects.filter(viscosity=primary_oil.viscosity).exclude(id=primary_oil.id)[:2] if primary_oil else []
+                explanation = "Our rule-based system matched your vehicle specifications with the manufacturer's recommended viscosity."
+            else:
+                primary_oil = Oil.objects.order_by('-rating').first()
+                alternative_oils = []
+                explanation = "We couldn't find your specific vehicle, so we're recommending our top-rated versatile oil."
+
+        # Log initial recommendation
+        if primary_oil:
+            RecommendationFeedback.objects.create(
+                query=query,
+                recommended_oil=primary_oil,
+                is_helpful=True # Default until user says otherwise
+            )
+
+        return Response({
+            "query_id": query.id,
+            "recommendation": OilSerializer(primary_oil).data if primary_oil else None,
+            "alternatives": OilSerializer(alternative_oils, many=True).data,
+            "explanation": explanation,
+            "system": "AI" if use_ai else "Rule-based",
+            "confidence": round(confidence, 2)
         })
-    return JsonResponse({'status': 'error'}, status=400)
+
+class SubmitFeedbackView(generics.GenericAPIView):
+    def post(self, request):
+        query_id = request.data.get('query_id')
+        selected_oil_id = request.data.get('selected_oil_id')
+        rating = request.data.get('rating', 5)
+        comment = request.data.get('comment', "")
+        
+        try:
+            query = VehicleQuery.objects.get(id=query_id)
+            # Find the feedback record created during recommendation
+            feedback = RecommendationFeedback.objects.filter(query=query).first()
+            if feedback:
+                if selected_oil_id:
+                    feedback.selected_oil_id = selected_oil_id
+                feedback.rating = rating
+                feedback.comment = comment
+                feedback.is_helpful = (rating >= 3)
+                feedback.save()
+                return Response({"status": "success"})
+        except VehicleQuery.DoesNotExist:
+            pass
+            
+        return Response({"status": "error", "message": "Query not found"}, status=404)

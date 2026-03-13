@@ -14,10 +14,18 @@ class OilVariantSerializer(serializers.ModelSerializer):
 
 class OilSerializer(serializers.ModelSerializer):
     variants = OilVariantSerializer(many=True, read_only=True)
+    rec_price = serializers.ReadOnlyField() 
+    rec_volume = serializers.ReadOnlyField()
     
     class Meta:
         model = Oil
-        fields = '__all__'
+        fields = [
+            'id', 'brand', 'viscosity', 'oil_type', 'vehicle_type', 
+            'api_rating', 'jaso_rating', 'change_interval_km', 
+            'change_interval_months', 'price', 'volume_liters',
+            'image_url', 'image', 'description', 'stock_count', 
+            'rating', 'variants', 'rec_price', 'rec_volume'
+        ]
 
 class VehicleSerializer(serializers.ModelSerializer):
     recommended_oil_details = OilSerializer(source='recommended_oil', read_only=True)

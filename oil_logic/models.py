@@ -192,6 +192,32 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField()
     price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2)
 
+class VehicleQuery(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    brand = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
+    year = models.IntegerField()
+    engine_type = models.CharField(max_length=20, blank=True, null=True)
+    displacement_cc = models.IntegerField(default=0)
+    odometer_km = models.IntegerField(default=0)
+    driving_condition = models.CharField(max_length=50, blank=True, null=True)
+    typical_trip_length = models.CharField(max_length=50, blank=True, null=True)
+    atmosphere_temp = models.CharField(max_length=50, blank=True, null=True)
+    budget_preference = models.CharField(max_length=50, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
-        return f"{self.quantity}x {self.oil.brand if self.oil else 'Unknown Oil'}"
+        return f"Query for {self.year} {self.brand} {self.model} at {self.created_at}"
+
+class RecommendationFeedback(models.Model):
+    query = models.ForeignKey(VehicleQuery, on_delete=models.CASCADE, related_name='feedbacks')
+    recommended_oil = models.ForeignKey(Oil, on_delete=models.CASCADE, related_name='recommendations_given')
+    selected_oil = models.ForeignKey(Oil, on_delete=models.SET_NULL, null=True, blank=True, related_name='actual_selections')
+    is_helpful = models.BooleanField(default=True)
+    rating = models.IntegerField(default=5)  # 1 to 5
+    comment = models.TextField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback for {self.recommended_oil.brand} - Helper: {self.is_helpful}"
 
