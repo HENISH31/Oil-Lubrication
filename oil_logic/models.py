@@ -162,6 +162,7 @@ class ServiceRecord(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    tagline = models.CharField(max_length=255, blank=True, null=True, help_text="A short tagline to display on your profile.")
     
     def __str__(self):
         return f"Profile for {self.user.username}"

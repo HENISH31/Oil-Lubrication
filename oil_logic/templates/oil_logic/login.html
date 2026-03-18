@@ -11,9 +11,9 @@
         <form method="POST" class="space-y-6">
             {% csrf_token %}
             <div>
-                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Username</label>
-                <input type="text" name="username"
-                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-red-500">
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Email Address</label>
+                <input type="email" name="username"
+                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-red-500" required>
             </div>
             <div>
                 <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Password</label>

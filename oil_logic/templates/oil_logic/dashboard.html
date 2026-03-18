@@ -3,12 +3,31 @@
 {% block content %}
 <section class="min-h-[80vh] flex flex-col items-center justify-center px-6 py-12">
     <!-- Header -->
-    <div class="text-center mb-16">
+    <div class="text-center mb-8">
         <h1 class="text-5xl font-black italic uppercase tracking-tighter mb-4">
             Vehicle <span class="text-red-500">Intelligence</span>
         </h1>
-        <p class="text-gray-500 font-bold uppercase tracking-[0.3em] text-[10px]">Registry Access • Real-time Diagnostic
-            Data</p>
+        <p class="text-gray-500 font-bold uppercase tracking-[0.3em] text-[10px]">Registry Access • Real-time Diagnostic Data</p>
+    </div>
+
+    <!-- Welcome Back Box -->
+    <div class="w-full max-w-2xl mb-12">
+        <div class="glass-premium p-8 rounded-[2rem] border-l-4 border-red-500 flex items-center gap-6 shadow-2xl relative overflow-hidden group">
+            <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-red-500/10 blur-[50px] rounded-full"></div>
+            
+            <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-800 rounded-full flex items-center justify-center text-white text-2xl font-black shadow-lg">
+                {{ user.username|first|upper }}
+            </div>
+            <div class="relative z-10">
+                <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Welcome Back</p>
+                <h2 class="text-3xl font-black text-white uppercase tracking-tighter">
+                    {{ user.get_full_name|default:user.username }}
+                </h2>
+                {% if user.profile.tagline %}
+                <p class="text-[10px] text-red-500 font-black uppercase tracking-widest mt-1">{{ user.profile.tagline }}</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <!-- Search Central -->

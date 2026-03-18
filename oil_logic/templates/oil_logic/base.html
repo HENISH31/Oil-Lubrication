@@ -26,50 +26,13 @@
         }
 
         /* ── Theme Tokens ── */
-        :root,
-        [data-theme="dark"] {
+        :root {
             --bg-primary: #0A0A0A;
             --bg-secondary: #141414;
             --text-primary: #ffffff;
             --text-muted: #6b7280;
             --card-bg: rgba(20, 20, 20, 0.85);
             --border-col: rgba(255, 255, 255, 0.06);
-        }
-
-        [data-theme="light"] {
-            --bg-primary: #f4f6f9;
-            --bg-secondary: #ffffff;
-            --text-primary: #1e293b;
-            --text-muted: #64748b;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --border-col: rgba(0, 0, 0, 0.08);
-            color-scheme: light;
-        }
-
-        [data-theme="light"] body {
-            background-color: #f4f6f9;
-            color: #1e293b;
-        }
-
-        [data-theme="light"] .glass {
-            background: rgba(255, 255, 255, 0.7);
-            border-color: rgba(0, 0, 0, 0.08);
-        }
-
-        [data-theme="light"] .glass-premium {
-            background: rgba(255, 255, 255, 0.92);
-            border-color: rgba(0, 0, 0, 0.1);
-        }
-
-        [data-theme="light"] nav {
-            background: rgba(255, 255, 255, 0.85) !important;
-            border-color: rgba(0, 0, 0, 0.08) !important;
-        }
-
-        [data-theme="light"] select,
-        [data-theme="light"] select option {
-            background-color: #ffffff !important;
-            color: #1e293b !important;
         }
 
         .glass {
@@ -324,6 +287,9 @@
                                         {% endif %}
                                     </p>
                                     <p class="text-[10px] text-gray-500 mt-1 lowercase truncate">{{ user.email }}</p>
+                                    {% if user.profile.tagline %}
+                                    <p class="text-[9px] text-red-500 font-bold mt-1 uppercase tracking-widest">{{ user.profile.tagline }}</p>
+                                    {% endif %}
                                     {% if user.profile.phone_number %}
                                     <p class="text-[9px] text-red-500/80 font-bold mt-1">{{ user.profile.phone_number }}
                                     </p>
@@ -370,12 +336,7 @@
                     {% endif %}
                 </div>
 
-                <!-- Dark Mode Toggle -->
-                <button id="theme-toggle" onclick="toggleTheme()"
-                    class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all border border-white/5 hover:border-white/20"
-                    title="Toggle dark/light mode">
-                    <i id="theme-icon" class="fas fa-sun text-xs text-yellow-400"></i>
-                </button>
+
 
                 <!-- Mobile Menu Toggle -->
                 <button class="md:hidden text-white" onclick="toggleMenu()">
@@ -529,31 +490,7 @@
 
     <script src="{% static 'js/glide_advisor.js' %}"></script>
     <script>
-        // ── Dark/Light Theme Toggle ──
-        (function () {
-            const saved = localStorage.getItem('oilrec-theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', saved);
-            // Update icon once DOM is ready
-            document.addEventListener('DOMContentLoaded', () => updateThemeIcon(saved));
-        })();
 
-        function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme') || 'dark';
-            const next = current === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            localStorage.setItem('oilrec-theme', next);
-            updateThemeIcon(next);
-        }
-
-        function updateThemeIcon(theme) {
-            const icon = document.getElementById('theme-icon');
-            if (!icon) return;
-            if (theme === 'light') {
-                icon.className = 'fas fa-moon text-xs text-blue-400';
-            } else {
-                icon.className = 'fas fa-sun text-xs text-yellow-400';
-            }
-        }
     </script>
 </body>
 

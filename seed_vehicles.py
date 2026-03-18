@@ -31,9 +31,18 @@ def seed_more_data():
                     }
                 )
                 
-                # Ensure variants exist with specific pricing: 1L=850, 4L=3200, 5L=3900
-                price_map = {1.0: 850, 4.0: 3200, 5.0: 3900}
-                for vol, price in price_map.items():
+                # Ensure variants exist with specific pricing
+                # We'll use a more flexible mapping or let the management command handle it
+                # For now, let's keep it consistent with the new realistic logic structure
+                # but simplified for the seeder
+                if t == 'Synthetic':
+                    p_map = {1.0: 1000, 4.0: 3800, 5.0: 4500}
+                elif t == 'Semi-Synthetic':
+                    p_map = {1.0: 650, 4.0: 2400, 5.0: 3000}
+                else: # Mineral
+                    p_map = {1.0: 450, 4.0: 1800, 5.0: 2200}
+
+                for vol, price in p_map.items():
                     from oil_logic.models import OilVariant
                     OilVariant.objects.update_or_create(
                         oil=oil,

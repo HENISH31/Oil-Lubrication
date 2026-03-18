@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Oil, OilVariant, Vehicle, Maintenance, UserProfile, CartItem, Order, OrderItem, VehicleRegistration, ServiceRecord, VehicleQuery, RecommendationFeedback
+from .utils import update_oil_prices_logic
 
 @admin.register(VehicleQuery)
 class VehicleQueryAdmin(admin.ModelAdmin):
@@ -24,6 +25,12 @@ class OilAdmin(admin.ModelAdmin):
     list_display = ('brand', 'viscosity', 'oil_type', 'volume_1L_price', 'volume_4L_price', 'volume_5L_price')
     list_filter = ('brand', 'oil_type')
     search_fields = ('brand', 'viscosity')
+    actions = ['update_prices_to_realistic']
+
+    def update_prices_to_realistic(self, request, queryset):
+        count = update_oil_prices_logic(queryset)
+        self.message_user(request, f"Successfully updated prices for {count} oils.")
+    update_prices_to_realistic.short_description = "Update selected oils to realistic 2025 prices"
     fieldsets = (
         ('Basic Information', {'fields': ('brand', 'viscosity', 'oil_type', 'vehicle_type')}),
         ('Pricing by Volume', {'fields': ('volume_1L_price', 'volume_4L_price', 'volume_5L_price', 'price', 'volume_liters')}),

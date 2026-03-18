@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }
+        .header { text-align: center; padding-bottom: 20px; border-bottom: 2px solid #FF4D4D; }
+        .header h1 { color: #FF4D4D; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+        .order-info { margin: 20px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+        .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .item:last-child { border-bottom: none; }
+        .total { text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 20px; color: #FF4D4D; }
+        .footer { text-align: center; font-size: 0.8em; color: #888; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>OilRec</h1>
+            <p>Premium Automotive Care</p>
+        </div>
+        
+        <h2>Thank you for your order!</h2>
+        <p>Hi {{ order.user.get_full_name|default:order.user.username }},</p>
+        <p>Your order has been successfully placed and is being processed.</p>
+        
+        <div class="order-info">
+            <p><strong>Order ID:</strong> #{{ order.id }}</p>
+            <p><strong>Date:</strong> {{ order.created_at|date:"F d, Y @ H:i" }}</p>
+        </div>
+        
+        <h3>Order Summary</h3>
+        {% for item in order.items.all %}
+        <div class="item">
+            <span>{{ item.quantity }}x {{ item.oil.brand }} {{ item.oil.viscosity }} ({{ item.oil.oil_type }})</span>
+            <span>₹{{ item.price_at_purchase }}</span>
+        </div>
+        {% endfor %}
+        
+        <div class="total">
+            Grand Total: ₹{{ order.total_price }}
+        </div>
+        
+        <p>You can view your full purchase history in your <a href="{{ protocol }}://{{ domain }}{% url 'profile_page' %}">Member Profile</a>.</p>
+        
+        <div class="footer">
+            <p>&copy; 2026 OilRec. All rights reserved.</p>
+            <p>This is a simulated email for development purposes.</p>
+        </div>
+    </div>
+</body>
+</html>

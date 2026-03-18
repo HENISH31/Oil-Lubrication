@@ -1,23 +1,25 @@
 from rest_framework import viewsets, generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .models import Oil, Vehicle, Maintenance, UserProfile, CartItem, Order, OrderItem, VehicleRegistration, ServiceRecord
-from .serializers import OilSerializer, VehicleSerializer, MaintenanceSerializer, UserSerializer
-from django.http import JsonResponse
+import razorpay
 from django.utils import timezone
+from .models import Oil, Vehicle, Maintenance, UserProfile, CartItem, Order, OrderItem, VehicleRegistration, ServiceRecord, VehicleQuery, RecommendationFeedback
+from .ai_engine import AIOilRecommender
+recommender = AIOilRecommender()
+from .serializers import OilSerializer, VehicleSerializer, MaintenanceSerializer, UserSerializer
+from .utils import send_order_confirmation_email
+from django.http import JsonResponse
 from .services import VehicleLookupService, AIAgentService
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 
-# NOTE: Vehicle and Maintenance already imported above with other models
-
 import json
 import requests
 from django.conf import settings
-
-
+import razorpay
+from django.views.decorators.csrf import csrf_exempt
 def home(request):
     return render(request, 'oil_logic/index.html')
 
@@ -33,7 +35,7 @@ def recommendation_page(request):
 
 @login_required
 def shop_page(request):
-    oils = Oil.objects.all()
+    oils = Oil.objects.prefetch_related('variants').all()
     
     # Filtering
     brands = request.GET.getlist('brand')
@@ -110,7 +112,7 @@ def register(request):
             user = form.save()
             UserProfile.objects.get_or_create(user=user)
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('dashboard')
+            return redirect('home')
     else:
         form = CustomRegistrationForm()
     return render(request, 'oil_logic/register.html', {'form': form})
@@ -203,8 +205,17 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
                 rec_vol = 5.0
         
         # Determine price based on user rules
-        # 1L=850, 4L=3200, 5L=3900
-        price_map = {1.0: 850.00, 4.0: 3200.00, 5.0: 3900.00}
+        # Use prices from the first matching oil if possible, otherwise use global defaults
+        sample_oil = oil or Oil.objects.first()
+        if sample_oil:
+            price_map = {
+                1.0: float(sample_oil.volume_1L_price),
+                4.0: float(sample_oil.volume_4L_price),
+                5.0: float(sample_oil.volume_5L_price)
+            }
+        else:
+            price_map = {1.0: 850.00, 4.0: 3200.00, 5.0: 3900.00}
+        
         rec_price = price_map.get(rec_vol, 850.00)
         
         # Serialize and inject
@@ -321,57 +332,79 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
         for v in vehicles:
             v_data = VehicleSerializer(v).data
             
-            # Logic for Primary Oil selection (Best match)
-            base_oil = v.recommended_oil
-            target_viscosity = base_oil.viscosity if base_oil else "5W-30"
-            target_type = base_oil.oil_type if base_oil else "Synthetic"
-
-            # Adjustments based on inputs
-            if driving_condition == 'Off-road' or mileage_range in ['100k-150k', 'Above-150k']:
-                # Nudge towards thicker oil if possible (simple heuristic for this system)
-                if target_viscosity == "0W-20": target_viscosity = "5W-30"
-                elif target_viscosity == "5W-30": target_viscosity = "5W-40"
-                elif target_viscosity == "10W-30": target_viscosity = "10W-40"
-
-            if preferred_frequency == '12m':
-                target_type = "Synthetic"
-
-            # 1. Primary Oil (The refined recommendation)
-            primary_oil = Oil.objects.filter(viscosity=target_viscosity).order_by('-rating').first()
-            if not primary_oil: primary_oil = base_oil
-            if not primary_oil: primary_oil = global_fallback_oil
-
-            # 2. Premium Oil (Highest price/rating Synthetic)
-            # Exclude primary oil to ensure variety
-            premium_oil = Oil.objects.filter(viscosity=target_viscosity, oil_type='Synthetic')
-            if primary_oil:
-                premium_oil = premium_oil.exclude(id=primary_oil.id)
-            premium_oil = premium_oil.order_by('-price').first()
-            if not premium_oil: premium_oil = primary_oil
-
-            # 3. Economy Oil (Lowest price Mineral/Semi-Synthetic)
-            # Exclude primary and premium oils to ensure variety
-            economy_oil = Oil.objects.filter(viscosity=target_viscosity, oil_type__in=['Mineral', 'Semi-Synthetic'])
-            exclude_ids = []
-            if primary_oil: exclude_ids.append(primary_oil.id)
-            if premium_oil: exclude_ids.append(premium_oil.id)
-            
-            economy_oil = economy_oil.exclude(id__in=exclude_ids)
-            economy_oil = economy_oil.order_by('price').first()
-            
-            if not economy_oil:
-                # If still nothing, try any oil of that viscosity that isn't already picked
-                economy_oil = Oil.objects.filter(viscosity=target_viscosity).exclude(id__in=exclude_ids).order_by('price').first()
-            if not economy_oil: economy_oil = primary_oil
-
-            v_data['recommendations'] = {
-                'primary': self._get_contextual_oil_data(primary_oil, v.vehicle_type, v.oil_capacity),
-                'premium': self._get_contextual_oil_data(premium_oil, v.vehicle_type, v.oil_capacity),
-                'economy': self._get_contextual_oil_data(economy_oil, v.vehicle_type, v.oil_capacity),
-            }
+            # --- REFINED LOGIC ---
+            v_data['recommendations'] = self._get_refined_recommendations(v, driving_condition, mileage_range, preferred_frequency)
             data.append(v_data)
 
         return Response(data)
+
+    def _get_refined_recommendations(self, vehicle, driving_condition, mileage_range, preferred_frequency):
+        """Refined hybrid logic for accurate comparisons"""
+        base_oil = vehicle.recommended_oil
+        target_viscosity = base_oil.viscosity if base_oil else "5W-30"
+        target_type = base_oil.oil_type if base_oil else "Synthetic"
+        
+        # 1. VISCOSITY ADJUSTMENT (Rules)
+        if driving_condition == 'Off-road' or mileage_range in ['100k-150k', 'Above-150k']:
+            if target_viscosity == "0W-20": target_viscosity = "5W-30"
+            elif target_viscosity == "5W-30": target_viscosity = "5W-40"
+            elif target_viscosity == "10W-30": target_viscosity = "10W-40"
+        
+        # 2. OIL TYPE ADJUSTMENT (Rules)
+        if preferred_frequency == '12m' or driving_condition in ['City', 'Off-road']:
+            target_type = "Synthetic"
+
+        # 3. AI SANITY CHECK
+        try:
+            query_data = {
+                'brand': vehicle.brand,
+                'model': vehicle.model,
+                'year': vehicle.year,
+                'driving_condition': driving_condition,
+                'odometer_km': {'0-50k': 25000, '50k-100k': 75000, '100k-150k': 125000, 'Above-150k': 175000}.get(mileage_range, 30000),
+                'engine_type': vehicle.engine_type,
+                'displacement_cc': vehicle.displacement_cc or 1500
+            }
+            ai_oil_id, confidence = recommender.predict(query_data)
+            if ai_oil_id and confidence > 0.8:
+                ai_oil = Oil.objects.filter(id=ai_oil_id).first()
+                if ai_oil:
+                    # If AI is very confident, use its viscosity but respect our safety bounds
+                    target_viscosity = ai_oil.viscosity
+        except Exception as e:
+            print(f"AI Check failed in refined logic: {e}")
+
+        # 4. SELECT COMPONENT OILS
+        # Global absolute fallback
+        fallback = Oil.objects.filter(rating__gte=4.5).order_by('-rating').first() or Oil.objects.first()
+
+        # PRIMARY: Best match (respecting adjusted viscosity and type)
+        primary = Oil.objects.filter(viscosity=target_viscosity, oil_type=target_type).order_by('-rating').first()
+        if not primary:
+            primary = Oil.objects.filter(viscosity=target_viscosity).order_by('-rating').first()
+        if not primary:
+            primary = base_oil or fallback
+
+        # PREMIUM: Top-tier synthetic
+        premium = Oil.objects.filter(viscosity=target_viscosity, oil_type='Synthetic').order_by('-price', '-rating').first()
+        if not premium or premium.id == primary.id:
+            # Try to find a more expensive one even if different viscosity (premium brands)
+            premium = Oil.objects.filter(oil_type='Synthetic').order_by('-price').first()
+        if not premium:
+            premium = primary
+
+        # ECONOMY: Best value
+        economy = Oil.objects.filter(viscosity=target_viscosity, oil_type__in=['Mineral', 'Semi-Synthetic']).order_by('price').first()
+        if not economy or economy.id == primary.id:
+            economy = Oil.objects.filter(oil_type__in=['Mineral', 'Semi-Synthetic']).order_by('price').first()
+        if not economy:
+            economy = primary
+
+        return {
+            'primary': self._get_contextual_oil_data(primary, vehicle.vehicle_type, vehicle.oil_capacity),
+            'premium': self._get_contextual_oil_data(premium, vehicle.vehicle_type, vehicle.oil_capacity),
+            'economy': self._get_contextual_oil_data(economy, vehicle.vehicle_type, vehicle.oil_capacity),
+        }
 
 class MaintenanceViewSet(viewsets.ModelViewSet):
     serializer_class = MaintenanceSerializer
@@ -455,8 +488,7 @@ def cart_view(request):
 
 @login_required
 def remove_from_cart(request, item_id):
-    cart_item = CartItem.objects.get(id=item_id, user=request.user)
-    cart_item.delete()
+    CartItem.objects.filter(id=item_id, user=request.user).delete()
     return redirect('cart_view')
 
 @login_required
@@ -466,17 +498,101 @@ def checkout(request):
         return redirect('shop_page')
     
     total = sum(item.total_price() for item in cart_items)
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    
+    # Initialize Razorpay Order
+    payment = None
+    error_msg = None
+    try:
+        payment = client.order.create({
+            "amount": int(total * 100), # amount in paise
+            "currency": "INR",
+            "payment_capture": "1"
+        })
+    except razorpay.errors.BadRequestError:
+        error_msg = "Razorpay authentication failed. Please update your RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in settings.py with real Test Keys from your Razorpay Dashboard."
+    except Exception as e:
+        error_msg = f"Payment Gateway Error: {str(e)}"
+    
+    context = {
+        'payment': payment,
+        'razorpay_key_id': settings.RAZORPAY_KEY_ID,
+        'total': total,
+        'cart_items': cart_items,
+        'error': error_msg
+    }
+    return render(request, 'oil_logic/payment.html', context)
+
+@csrf_exempt
+@login_required
+def payment_success(request):
+    if request.method == "POST":
+        data = request.POST
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        try:
+            client.utility.verify_payment_signature({
+                'razorpay_order_id': data.get('razorpay_order_id'),
+                'razorpay_payment_id': data.get('razorpay_payment_id'),
+                'razorpay_signature': data.get('razorpay_signature')
+            })
+            
+            # Payment is successful and authentic, process order
+            cart_items = CartItem.objects.filter(user=request.user)
+            if not cart_items:
+                return redirect('profile_page')
+                
+            total = sum(item.total_price() for item in cart_items)
+            order = Order.objects.create(user=request.user, total_price=total, is_paid=True)
+            
+            for item in cart_items:
+                OrderItem.objects.create(
+                    order=order,
+                    oil=item.oil,
+                    quantity=item.quantity,
+                    price_at_purchase=item.price
+                )
+            
+            cart_items.delete()
+            
+            # Send Email Notification
+            send_order_confirmation_email(request, order)
+            
+            return redirect('profile_page')
+            
+        except razorpay.errors.SignatureVerificationError:
+            return render(request, 'oil_logic/payment.html', {'error': 'Payment Verification Failed'})
+            
+    return redirect('cart_view')
+
+@login_required
+def simulate_payment(request):
+    """
+    Temporary view to bypass Razorpay and simulate a successful payment.
+    """
+    cart_items = CartItem.objects.filter(user=request.user)
+    if not cart_items:
+        return redirect('shop_page')
+        
+    total = sum(item.total_price() for item in cart_items)
+    
+    # Create Order
     order = Order.objects.create(user=request.user, total_price=total, is_paid=True)
     
+    # Create OrderItems
     for item in cart_items:
         OrderItem.objects.create(
             order=order,
             oil=item.oil,
             quantity=item.quantity,
-            price_at_purchase=item.oil.price
+            price_at_purchase=item.price
         )
     
+    # Clear Cart
     cart_items.delete()
+    
+    # Send Email Notification
+    send_order_confirmation_email(request, order)
+    
     return redirect('profile_page')
 
 @login_required
@@ -553,11 +669,7 @@ def ai_chat(request):
         response_text = AIAgentService.get_response(user_message, request.user)
         
 
-from .ai_engine import AIOilRecommender
-from .models import VehicleQuery, RecommendationFeedback
-
-recommender = AIOilRecommender()
-
+# AIRecommendationView uses the globally initialized 'recommender'
 class AIRecommendationView(generics.GenericAPIView):
     def post(self, request):
         data = request.data

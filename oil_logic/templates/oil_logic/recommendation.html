@@ -872,7 +872,7 @@
                                         </div>
                                     </td>
                                     <td><span class="text-xs font-black text-white">${o.change_interval_km} KM</span></td>
-                                    <td>
+                                    <td class="whitespace-nowrap">
                                         <div class="flex items-baseline gap-1">
                                             <span class="text-xs text-red-500 font-bold">₹</span>
                                             <span class="text-lg font-black text-white">${o.rec_price || o.price}</span>
@@ -979,7 +979,8 @@
         background: rgba(255, 255, 255, 0.02);
         border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 1.5rem;
-        overflow: hidden;
+        overflow-x: auto; /* Changed from hidden to auto */
+        -webkit-overflow-scrolling: touch; /* Better mobile experience */
     }
 
     .comparison-table th,
@@ -1019,8 +1020,28 @@
         font-weight: 900;
     }
 
+    .comparison-table {
+        scrollbar-width: thin;
+        scrollbar-color: #ef4444 rgba(255, 255, 255, 0.05);
+        padding-bottom: 8px; /* Room for the scrollbar */
+    }
+
+    .comparison-table::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .comparison-table::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 10px;
+    }
+
+    .comparison-table::-webkit-scrollbar-thumb {
+        background: #ef4444;
+        border-radius: 10px;
+    }
+
     .comparison-table table {
-        min-width: 900px;
+        min-width: 950px; /* Slightly increased to ensure 'Action' and 'Price' are distinct */
     }
 
     .badge-economy {
