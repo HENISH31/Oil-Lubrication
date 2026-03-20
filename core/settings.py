@@ -165,6 +165,10 @@ LOGOUT_REDIRECT_URL = 'home'
 RAZORPAY_KEY_ID = 'rzp_test_YourTestKeyIdHere'
 RAZORPAY_KEY_SECRET = 'YourTestSecretHere'
 
+# Vehicle API (RapidAPI - Vahan)
+VEHICLE_API_KEY = 'YourRapidAPIKeyHere'
+VEHICLE_API_HOST = 'vahan-api.p.rapidapi.com'
+
 # Email Configuration (Console for local testing)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'support@oilrec.com'

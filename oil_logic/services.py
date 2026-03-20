@@ -10,26 +10,61 @@ class VehicleLookupService:
     def lookup_by_plate(license_plate):
         """
         Main entry point for looking up a vehicle.
-        Currently defaults to a simulated response, but can be configured
-        to use real providers like RapidAPI or API Setu.
+        Integrates with RapidAPI Vahan Provider.
         """
         api_key = getattr(settings, 'VEHICLE_API_KEY', None)
+        api_host = getattr(settings, 'VEHICLE_API_HOST', 'vahan-api.p.rapidapi.com')
         
-        # If no API key is configured, we can return None or use dummy data logic
-        if not api_key:
-            return None
+        # Security: Don't make external calls if key is default/placeholder
+        if not api_key or 'YourRapid' in api_key:
+            return VehicleLookupService.get_mock_data(license_plate)
 
-        # Example: RapidAPI Vahan Provider Integration
-        # url = "https://vahan-api.p.rapidapi.com/vahan"
-        # headers = {
-        #     "X-RapidAPI-Key": api_key,
-        #     "X-RapidAPI-Host": "vahan-api.p.rapidapi.com"
-        # }
-        # response = requests.get(url, headers=headers, params={"plate": license_plate})
-        # if response.status_code == 200:
-        #     return response.json()
+        url = f"https://{api_host}/vahan"
+        headers = {
+            "X-RapidAPI-Key": api_key,
+            "X-RapidAPI-Host": api_host
+        }
         
-        return None
+        try:
+            response = requests.get(url, headers=headers, params={"plate": license_plate.replace(" ", "")}, timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                # Adapt API response to our internal format
+                return {
+                    'brand': data.get('manufacturer', 'Unknown'),
+                    'model': data.get('model', 'Unknown'),
+                    'year': data.get('reg_date', '2020')[:4], # Extract year from YYYY-MM-DD
+                    'type': data.get('vehicle_type', 'Car'),
+                    'engine_type': data.get('fuel_type', 'Petrol'),
+                    'reg_date': data.get('reg_date'),
+                    'puc_expiry': data.get('puc_expiry', '2025-12-31'),
+                    'owner_name': data.get('owner_name', 'Verified Owner'),
+                    'is_real': True
+                }
+        except Exception as e:
+            print(f"API Lookup Failed: {e}")
+        
+        return VehicleLookupService.get_mock_data(license_plate)
+
+    @staticmethod
+    def get_mock_data(license_plate):
+        """
+        Returns high-quality simulated data for development if no API key is present.
+        """
+        # Simulated responses for common test plates
+        sim_db = {
+            "MH12AB1234": {
+                'brand': 'Maruti Suzuki', 'model': 'Swift VXI', 'year': '2022',
+                'type': 'Car', 'engine_type': 'Petrol', 'reg_date': '2022-05-15',
+                'puc_expiry': '2025-05-15', 'owner_name': 'Rahul Sharma', 'is_real': False
+            },
+            "KA01HH9999": {
+                'brand': 'BMW', 'model': '3 Series', 'year': '2023',
+                'type': 'Car', 'engine_type': 'Petrol', 'reg_date': '2023-01-10',
+                'puc_expiry': '2026-01-10', 'owner_name': 'Anita Desai', 'is_real': False
+            }
+        }
+        return sim_db.get(license_plate.replace(" ", "").upper())
 
     @staticmethod
     def get_mock_data(license_plate):

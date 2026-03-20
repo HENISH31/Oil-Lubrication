@@ -606,12 +606,15 @@ def lookup_vehicle_by_plate(request):
     if api_data:
         return JsonResponse({
             'status': 'success',
-            'brand': api_data.get('brand', 'Unknown'),
-            'model': api_data.get('model', 'Unknown'),
-            'year': api_data.get('year', 2024),
+            'brand': api_data.get('brand'),
+            'model': api_data.get('model'),
+            'year': api_data.get('year'),
             'vehicle_type': api_data.get('type', 'Car'),
-            'puc_expiry': api_data.get('puc_expiry', timezone.now().date().strftime('%Y-%m-%d')),
-            'registration_date': api_data.get('reg_date', timezone.now().date().strftime('%Y-%m-%d')),
+            'engine_type': api_data.get('engine_type', 'Petrol'),
+            'puc_expiry': api_data.get('puc_expiry'),
+            'registration_date': api_data.get('reg_date'),
+            'owner_name': api_data.get('owner_name'),
+            'source': 'API' if api_data.get('is_real') else 'Simulator'
         })
 
     # 2. Fallback to local registry
@@ -641,7 +644,24 @@ def add_vehicle_by_plate(request):
         vehicle_id = data.get('vehicle_id')
         puc_expiry = data.get('puc_expiry')
 
-        vehicle = Vehicle.objects.get(id=vehicle_id)
+        # If it's a new vehicle from API, we might not have a vehicle_id yet
+        if not vehicle_id:
+            # Try to get or create the base Vehicle object
+            brand = data.get('brand')
+            model = data.get('model')
+            year = int(data.get('year', 2020))
+            engine_type = data.get('engine_type', 'Petrol')
+            
+            # Use rules to find a matching vehicle or create a generic one
+            vehicle, created = Vehicle.objects.get_or_create(
+                brand=brand, 
+                model=model, 
+                year=year,
+                engine_type=engine_type,
+                defaults={'vehicle_type': 'Car', 'oil_capacity': 4.0}
+            )
+        else:
+            vehicle = Vehicle.objects.get(id=vehicle_id)
         
         if Maintenance.objects.filter(user=request.user, license_plate=license_plate).exists():
             return JsonResponse({'status': 'error', 'message': 'Vehicle already in your garage'})
@@ -660,14 +680,20 @@ def add_vehicle_by_plate(request):
 @login_required
 def ai_chat(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        user_message = data.get('message', '')
-        
-        if not user_message:
-            return JsonResponse({'status': 'error', 'message': 'Message is empty'}, status=400)
+        try:
+            data = json.loads(request.body)
+            user_message = data.get('message', '')
             
-        response_text = AIAgentService.get_response(user_message, request.user)
-        
+            if not user_message:
+                return JsonResponse({'status': 'error', 'message': 'Message is empty'}, status=400)
+                
+            response_text = AIAgentService.get_response(user_message, request.user)
+            return JsonResponse({'status': 'success', 'response': response_text})
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON body'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
 
 # AIRecommendationView uses the globally initialized 'recommender'
 class AIRecommendationView(generics.GenericAPIView):
@@ -703,10 +729,13 @@ class AIRecommendationView(generics.GenericAPIView):
         explanation = ""
         
         if use_ai:
-            primary_oil = Oil.objects.get(id=oil_id)
-            alternatives = recommender.predict_with_alternatives(data, top_n=3)
-            alternative_oils = Oil.objects.filter(id__in=[a['oil_id'] for a in alternatives])
-            explanation = recommender.get_explanation(data, primary_oil)
+            primary_oil = Oil.objects.filter(id=oil_id).first()
+            if primary_oil:
+                alternatives = recommender.predict_with_alternatives(data, top_n=3)
+                alternative_oils = Oil.objects.filter(id__in=[a['oil_id'] for a in alternatives])
+                explanation = recommender.get_explanation(data, primary_oil)
+            else:
+                use_ai = False # Force fallback if AI returned non-existent ID
         else:
             # Fallback to rule-based logic (borrowed from existing implementation)
             vehicles = Vehicle.objects.filter(brand__iexact=brand, model__iexact=model, year=year)

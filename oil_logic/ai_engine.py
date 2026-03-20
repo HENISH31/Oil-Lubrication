@@ -38,6 +38,11 @@ class AIOilRecommender:
         
         # Enforce column order to match training data
         cols = ['brand', 'model', 'year', 'engine_type', 'displacement_cc', 'odometer_km', 'driving_condition']
+        
+        # Ensure all columns exist, fill missing with defaults
+        for col in cols:
+            if col not in df.columns:
+                df[col] = 0 if col in ['year', 'displacement_cc', 'odometer_km'] else 'Unknown'
         df = df[cols]
         
         # Categorical encoding
