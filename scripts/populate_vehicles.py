@@ -78,10 +78,25 @@ def run():
         {'vehicle_type': 'Bike', 'brand': 'Yamaha', 'model': 'MT-15', 'variant_name': 'Ver 2.0', 'year': 2024, 'engine_type': 'Petrol', 'displacement_cc': 155, 'oil_capacity': 1.0},
         
         {'vehicle_type': 'Car', 'brand': 'MG', 'model': 'Hector', 'variant_name': 'Sharp', 'year': 2023, 'engine_type': 'Diesel', 'displacement_cc': 1956, 'oil_capacity': 5.2},
+        {'vehicle_type': 'Car', 'brand': 'MG', 'model': 'Hector Plus', 'variant_name': 'Sharp Pro', 'year': 2024, 'engine_type': 'Diesel', 'displacement_cc': 1956, 'oil_capacity': 5.2},
+        {'vehicle_type': 'Car', 'brand': 'MG', 'model': 'Astor', 'variant_name': 'Savvy', 'year': 2023, 'engine_type': 'Petrol', 'displacement_cc': 1498, 'oil_capacity': 4.2},
+        {'vehicle_type': 'Car', 'brand': 'MG', 'model': 'Astor', 'variant_name': 'Sharp', 'year': 2024, 'engine_type': 'Petrol', 'displacement_cc': 1349, 'oil_capacity': 4.5},
+        {'vehicle_type': 'Car', 'brand': 'MG', 'model': 'Gloster', 'variant_name': 'Savvy', 'year': 2024, 'engine_type': 'Diesel', 'displacement_cc': 1996, 'oil_capacity': 6.5},
+        
         {'vehicle_type': 'Car', 'brand': 'Jeep', 'model': 'Compass', 'variant_name': 'Model S', 'year': 2024, 'engine_type': 'Diesel', 'displacement_cc': 1956, 'oil_capacity': 5.4},
+        {'vehicle_type': 'Car', 'brand': 'Jeep', 'model': 'Meridian', 'variant_name': 'Limited Plus', 'year': 2023, 'engine_type': 'Diesel', 'displacement_cc': 1956, 'oil_capacity': 5.4},
+        {'vehicle_type': 'Car', 'brand': 'Jeep', 'model': 'Meridian', 'variant_name': 'Overland', 'year': 2024, 'engine_type': 'Diesel', 'displacement_cc': 1956, 'oil_capacity': 5.4},
+        {'vehicle_type': 'Car', 'brand': 'Jeep', 'model': 'Wrangler', 'variant_name': 'Rubicon', 'year': 2024, 'engine_type': 'Petrol', 'displacement_cc': 1995, 'oil_capacity': 5.0},
         
         {'vehicle_type': 'Car', 'brand': 'Renault', 'model': 'Kiger', 'variant_name': 'RXZ', 'year': 2023, 'engine_type': 'Petrol', 'displacement_cc': 999, 'oil_capacity': 3.1},
+        {'vehicle_type': 'Car', 'brand': 'Renault', 'model': 'Kiger', 'variant_name': 'Turbo', 'year': 2024, 'engine_type': 'Petrol', 'displacement_cc': 999, 'oil_capacity': 3.1},
+        {'vehicle_type': 'Car', 'brand': 'Renault', 'model': 'Triber', 'variant_name': 'RXZ', 'year': 2024, 'engine_type': 'Petrol', 'displacement_cc': 999, 'oil_capacity': 3.1},
+        {'vehicle_type': 'Car', 'brand': 'Renault', 'model': 'Kwid', 'variant_name': 'Climber', 'year': 2023, 'engine_type': 'Petrol', 'displacement_cc': 999, 'oil_capacity': 3.0},
+        
         {'vehicle_type': 'Car', 'brand': 'Nissan', 'model': 'Magnite', 'variant_name': 'XV Premium', 'year': 2024, 'engine_type': 'Petrol', 'displacement_cc': 999, 'oil_capacity': 3.2},
+        {'vehicle_type': 'Car', 'brand': 'Nissan', 'model': 'Magnite', 'variant_name': 'Turbo', 'year': 2023, 'engine_type': 'Petrol', 'displacement_cc': 999, 'oil_capacity': 3.2},
+        {'vehicle_type': 'Car', 'brand': 'Nissan', 'model': 'X-Trail', 'variant_name': 'Standard', 'year': 2024, 'engine_type': 'Petrol', 'displacement_cc': 1497, 'oil_capacity': 4.5},
+        {'vehicle_type': 'Car', 'brand': 'Nissan', 'model': 'Kicks', 'variant_name': 'XV Premium', 'year': 2022, 'engine_type': 'Petrol', 'displacement_cc': 1330, 'oil_capacity': 4.2},
         
         {'vehicle_type': 'Bike', 'brand': 'Hero', 'model': 'Xpulse 200 4V', 'variant_name': 'Pro', 'year': 2024, 'engine_type': 'Petrol', 'displacement_cc': 199, 'oil_capacity': 1.1},
         {'vehicle_type': 'Bike', 'brand': 'Hero', 'model': 'Mavrick 440', 'variant_name': 'Base', 'year': 2024, 'engine_type': 'Petrol', 'displacement_cc': 440, 'oil_capacity': 2.0},

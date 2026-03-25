@@ -193,7 +193,7 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
 
-    def _get_contextual_oil_data(self, oil, vehicle_type, capacity):
+    def _get_contextual_oil_data(self, request, oil, vehicle_type, capacity):
         """Helper to inject rec_price and rec_volume into oil data"""
         if not oil: return None
         
@@ -219,7 +219,7 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
         rec_price = price_map.get(rec_vol, 850.00)
         
         # Serialize and inject
-        data = OilSerializer(oil).data
+        data = OilSerializer(oil, context={'request': request}).data
         data['rec_price'] = rec_price
         data['rec_volume'] = rec_vol
         return data
@@ -318,9 +318,9 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
                     'displacement_cc': 'Unknown',
                     'variant_name': 'AI Synthesis',
                     'recommendations': {
-                        'primary': self._get_contextual_oil_data(primary_oil, vehicle_type, 2.0),
-                        'premium': self._get_contextual_oil_data(premium_oil, vehicle_type, 2.0),
-                        'economy': self._get_contextual_oil_data(economy_oil, vehicle_type, 2.0),
+                        'primary': self._get_contextual_oil_data(request, primary_oil, vehicle_type, 2.0),
+                        'premium': self._get_contextual_oil_data(request, premium_oil, vehicle_type, 2.0),
+                        'economy': self._get_contextual_oil_data(request, economy_oil, vehicle_type, 2.0),
                     }
                 }
                 return Response([virtual_v])
@@ -333,12 +333,12 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
             v_data = VehicleSerializer(v).data
             
             # --- REFINED LOGIC ---
-            v_data['recommendations'] = self._get_refined_recommendations(v, driving_condition, mileage_range, preferred_frequency)
+            v_data['recommendations'] = self._get_refined_recommendations(request, v, driving_condition, mileage_range, preferred_frequency)
             data.append(v_data)
 
         return Response(data)
 
-    def _get_refined_recommendations(self, vehicle, driving_condition, mileage_range, preferred_frequency):
+    def _get_refined_recommendations(self, request, vehicle, driving_condition, mileage_range, preferred_frequency):
         """Refined hybrid logic for accurate comparisons"""
         base_oil = vehicle.recommended_oil
         target_viscosity = base_oil.viscosity if base_oil else "5W-30"
@@ -401,9 +401,9 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
             economy = primary
 
         return {
-            'primary': self._get_contextual_oil_data(primary, vehicle.vehicle_type, vehicle.oil_capacity),
-            'premium': self._get_contextual_oil_data(premium, vehicle.vehicle_type, vehicle.oil_capacity),
-            'economy': self._get_contextual_oil_data(economy, vehicle.vehicle_type, vehicle.oil_capacity),
+            'primary': self._get_contextual_oil_data(request, primary, vehicle.vehicle_type, vehicle.oil_capacity),
+            'premium': self._get_contextual_oil_data(request, premium, vehicle.vehicle_type, vehicle.oil_capacity),
+            'economy': self._get_contextual_oil_data(request, economy, vehicle.vehicle_type, vehicle.oil_capacity),
         }
 
 class MaintenanceViewSet(viewsets.ModelViewSet):
@@ -759,8 +759,8 @@ class AIRecommendationView(generics.GenericAPIView):
 
         return Response({
             "query_id": query.id,
-            "recommendation": OilSerializer(primary_oil).data if primary_oil else None,
-            "alternatives": OilSerializer(alternative_oils, many=True).data,
+            "recommendation": OilSerializer(primary_oil, context={'request': request}).data if primary_oil else None,
+            "alternatives": OilSerializer(alternative_oils, many=True, context={'request': request}).data,
             "explanation": explanation,
             "system": "AI" if use_ai else "Rule-based",
             "confidence": round(confidence, 2)

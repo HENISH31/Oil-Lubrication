@@ -118,7 +118,7 @@
                     <button onclick="nextStep(1)"
                         class="w-full md:w-auto px-12 py-5 rounded-2xl font-black uppercase tracking-widest glass hover:bg-white/5 transition-all">Back</button>
                     <button id="to-usage-btn"
-                        class="flex-1 btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-white">Next:
+                        class="flex-1 uiverse-btn py-5 rounded-2xl font-black uppercase tracking-widest text-white">Next:
                         Usage Profile</button>
                 </div>
             </div>
@@ -173,7 +173,7 @@
                     <button type="button" onclick="nextStep(2)"
                         class="w-full md:w-auto px-12 py-5 rounded-2xl font-black uppercase tracking-widest glass hover:bg-white/5 transition-all">Back</button>
                     <button type="button" id="find-btn"
-                        class="flex-1 btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-white">Generate
+                        class="flex-1 uiverse-btn py-5 rounded-2xl font-black uppercase tracking-widest text-white">Generate
                         Comparison Matrix</button>
                 </div>
             </div>
@@ -498,8 +498,8 @@
         document.getElementById('modal-oil-interval').innerText = `${oil.change_interval_km} KM`;
         document.getElementById('modal-oil-volume').innerText = `${oil.rec_volume || oil.volume_liters}L`;
         document.getElementById('modal-oil-price').innerText = oil.rec_price || oil.price;
-        document.getElementById('modal-oil-description').innerText = `Engineered for high-stress environments. Provides superior shear stability and film strength at high temperatures. Verified for ${oil.viscosity} performance standards.`;
-        document.getElementById('modal-oil-image').src = oil.image || "https://img.icons8.com/isometric/512/oil-can.png";
+        document.getElementById('modal-oil-description').innerText = oil.description || `Engineered for high-stress environments. Provides superior shear stability and film strength at high temperatures. Verified for ${oil.viscosity} performance standards.`;
+        document.getElementById('modal-oil-image').src = oil.image || oil.image_url || "https://img.icons8.com/isometric/512/oil-can.png";
         document.getElementById('modal-action-btn').onclick = () => addToCart(oilId);
         const modal = document.getElementById('oil-detail-modal');
         modal.classList.remove('hidden');
@@ -855,8 +855,8 @@
                                     </td>
                                     <td>
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-red-500 transition-colors">
-                                                <i class="fas fa-oil-can text-xl text-red-500/50 group-hover:text-white transition-colors"></i>
+                                            <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors overflow-hidden p-1">
+                                                <img src="${o.image || o.image_url || 'https://img.icons8.com/isometric/50/oil-can.png'}" alt="${o.brand}" class="max-w-full max-h-full object-contain">
                                             </div>
                                             <div>
                                                 <p class="font-black text-white uppercase">${o.brand}</p>

@@ -42,9 +42,13 @@
                     technology bridges the gap between mechanical potential and absolute protection.
                 </p>
                 <div class="pt-8">
-                    <a href="{% url 'recommendation_page' %}"
-                        class="btn-primary px-12 py-6 rounded-full font-black text-xl uppercase tracking-[0.2em] inline-block shadow-2xl shadow-red-500/20 hover:scale-105 transition-all">
-                        START PROCESS NOW
+                    <a href="{% url 'recommendation_page' %}" class="uiverse-synergy-btn">
+                        <span>START PROCESS NOW</span>
+                        <svg viewBox="0 0 13 10">
+                            <polygon points="2 1, 5 1, 4 8, 1 8"></polygon>
+                            <polygon points="6 1, 9 1, 8 8, 5 8"></polygon>
+                            <polygon points="10 1, 13 1, 12 8, 9 8"></polygon>
+                        </svg>
                     </a>
                 </div>
             </div>
@@ -111,7 +115,90 @@
     </div>
 </section>
 
-<!-- Why Viscosity Matters Section -->
+<!-- Virtual Dipstick Section -->
+<section id="virtual-dipstick" class="max-w-7xl mx-auto px-6 py-24 relative overflow-hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div class="space-y-8 order-2 lg:order-1">
+            <p class="text-[10px] font-black uppercase tracking-[0.4em] text-red-500">Real-time Diagnostics</p>
+            <h2 class="text-5xl font-black uppercase tracking-tighter leading-tight">Virtual <span class="text-red-500">Dipstick</span></h2>
+            <p class="text-gray-400 text-lg leading-relaxed">Most owners overlook the visual cues of their engine's lifeblood. Select your current oil color to receive an immediate molecular health analysis.</p>
+            
+            <div class="space-y-6 pt-10">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-500">Select Oil Color</span>
+                    <span id="dipstick-status-label" class="text-[10px] font-black uppercase tracking-widest text-green-500">Pristine</span>
+                </div>
+                
+                <!-- Interactive Dipstick -->
+                <div class="relative h-24 flex items-center group cursor-pointer">
+                    <!-- The Stick -->
+                    <div class="absolute inset-x-0 h-1 bg-gradient-to-r from-gray-700 to-gray-400 rounded-full"></div>
+                    
+                    <!-- Color Zones -->
+                    <div class="absolute inset-x-0 flex justify-between px-2">
+                        <button onclick="analyzeOil('pristine')" class="w-12 h-12 rounded-full bg-[#FFD700] border-4 border-black shadow-lg hover:scale-125 transition-transform relative z-10 group/zone">
+                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase opacity-0 group-hover/zone:opacity-100 transition-opacity">New</span>
+                        </button>
+                        <button onclick="analyzeOil('good')" class="w-12 h-12 rounded-full bg-[#DAA520] border-4 border-black shadow-lg hover:scale-125 transition-transform relative z-10 group/zone">
+                             <span class="absolute -top-8 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase opacity-0 group-hover/zone:opacity-100 transition-opacity">Fair</span>
+                        </button>
+                        <button onclick="analyzeOil('aged')" class="w-12 h-12 rounded-full bg-[#8B4513] border-4 border-black shadow-lg hover:scale-125 transition-transform relative z-10 group/zone">
+                             <span class="absolute -top-8 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase opacity-0 group-hover/zone:opacity-100 transition-opacity">Aged</span>
+                        </button>
+                        <button onclick="analyzeOil('critical')" class="w-12 h-12 rounded-full bg-[#4B2E0E] border-4 border-black shadow-lg hover:scale-125 transition-transform relative z-10 group/zone">
+                             <span class="absolute -top-8 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase opacity-0 group-hover/zone:opacity-100 transition-opacity">Dirty</span>
+                        </button>
+                        <button onclick="analyzeOil('danger')" class="w-12 h-12 rounded-full bg-[#1A1110] border-4 border-black shadow-lg hover:scale-125 transition-transform relative z-10 group/zone">
+                             <span class="absolute -top-8 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase opacity-0 group-hover/zone:opacity-100 transition-opacity">Toxic</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Result Panel -->
+            <div id="analysis-panel" class="glass-premium p-8 rounded-[2rem] border-white/10 hidden animate-in slide-in-from-bottom-5">
+                <div class="flex items-start gap-6">
+                    <div id="analysis-icon-container" class="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-500 text-2xl transition-colors duration-500">
+                        <i id="analysis-icon" class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="space-y-2 flex-1">
+                        <h4 id="analysis-title" class="text-xl font-black uppercase tracking-tight">Optimal molecular integrity</h4>
+                        <p id="analysis-text" class="text-sm text-gray-500 leading-relaxed italic">Your oil shows zero high-temp oxidation. Perfect film strength maintained.</p>
+                        <div class="pt-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[8px] font-black uppercase text-gray-400">Viscosity Retention</span>
+                                <span id="visc-percent" class="text-[10px] font-black text-green-500 transition-colors duration-500">100%</span>
+                            </div>
+                            <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                <div id="visc-bar" class="h-full bg-green-500 transition-all duration-1000" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Interactive Engine Wear View -->
+        <div class="relative h-[500px] glass-premium rounded-[3rem] overflow-hidden group/wear">
+             <div class="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent"></div>
+             <div class="absolute inset-0 flex items-center justify-center">
+                 <div id="engine-wear-visual" class="w-64 h-64 relative">
+                     <!-- Cylinder Simulation -->
+                     <div class="absolute inset-0 border-4 border-white/10 rounded-full animate-spin-slow"></div>
+                     <div class="absolute inset-4 border-2 border-white/5 rounded-full"></div>
+                     
+                     <div class="absolute inset-0 flex items-center justify-center flex-col text-center p-8">
+                         <i id="wear-icon" class="fas fa-shield-virus text-6xl text-green-500 mb-4 transition-all duration-500"></i>
+                         <p id="wear-score" class="text-4xl font-black text-white transition-all duration-1000">0%</p>
+                         <p class="text-[8px] font-black uppercase tracking-widest text-gray-500">Component Wear</p>
+                     </div>
+                 </div>
+             </div>
+             <!-- Scanning Effect -->
+             <div id="scanner-line" class="absolute inset-x-0 h-1 bg-red-500/50 shadow-[0_0_20px_#ff4d4d] z-20 hidden"></div>
+        </div>
+    </div>
+</section>
 <section id="viscosity-section" class="max-w-7xl mx-auto px-6 py-24 relative overflow-hidden">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <!-- Left: 3D Visualization -->
@@ -350,9 +437,11 @@
                         engines. Experience superior thermal stability and reduced friction for maximum power delivery.
                     </p>
                     <div class="pt-4 flex justify-end">
-                        <a href="{% url 'shop_page' %}"
-                            class="text-xs font-black uppercase tracking-widest hover:text-red-500 transition-colors flex items-center gap-2">
-                            Read more <i class="fas fa-arrow-right text-[10px]"></i>
+                        <a href="{% url 'shop_page' %}" class="learn-more">
+                            <span class="circle" aria-hidden="true">
+                                <span class="icon arrow"></span>
+                            </span>
+                            <span class="button-text">Read more</span>
                         </a>
                     </div>
                 </div>
@@ -372,9 +461,11 @@
                     <p class="text-gray-500 text-sm leading-relaxed flex-grow">Advanced formulation for wet-clutch
                         systems. Protect your high-revving engine and ensure smooth gear shifts in all conditions.</p>
                     <div class="pt-4 flex justify-end">
-                        <a href="{% url 'shop_page' %}"
-                            class="text-xs font-black uppercase tracking-widest hover:text-red-500 transition-colors flex items-center gap-2">
-                            Read more <i class="fas fa-arrow-right text-[10px]"></i>
+                        <a href="{% url 'shop_page' %}" class="learn-more">
+                            <span class="circle" aria-hidden="true">
+                                <span class="icon arrow"></span>
+                            </span>
+                            <span class="button-text">Read more</span>
                         </a>
                     </div>
                 </div>
@@ -394,9 +485,11 @@
                     <p class="text-gray-500 text-sm leading-relaxed flex-grow">Engineered for extreme loads and
                         long-haul durability. Our diesel-focused range minimizes soot buildup and maximizes uptime.</p>
                     <div class="pt-4 flex justify-end">
-                        <a href="{% url 'shop_page' %}"
-                            class="text-xs font-black uppercase tracking-widest hover:text-red-500 transition-colors flex items-center gap-2">
-                            Read more <i class="fas fa-arrow-right text-[10px]"></i>
+                        <a href="{% url 'shop_page' %}" class="learn-more">
+                            <span class="circle" aria-hidden="true">
+                                <span class="icon arrow"></span>
+                            </span>
+                            <span class="button-text">Read more</span>
                         </a>
                     </div>
                 </div>
@@ -416,9 +509,11 @@
                     <p class="text-gray-500 text-sm leading-relaxed flex-grow">Keep your engine at the perfect
                         temperature. Our OAT-based coolants provide ultimate corrosion protection for all metals.</p>
                     <div class="pt-4 flex justify-end">
-                        <a href="{% url 'shop_page' %}"
-                            class="text-xs font-black uppercase tracking-widest hover:text-red-500 transition-colors flex items-center gap-2">
-                            Read more <i class="fas fa-arrow-right text-[10px]"></i>
+                        <a href="{% url 'shop_page' %}" class="learn-more">
+                            <span class="circle" aria-hidden="true">
+                                <span class="icon arrow"></span>
+                            </span>
+                            <span class="button-text">Read more</span>
                         </a>
                     </div>
                 </div>
@@ -1330,6 +1425,88 @@
         document.getElementById('res-per-km').textContent = '₹' + perKm.toFixed(2) + ' / km';
         resultEl.classList.remove('hidden');
         emptyEl.classList.add('hidden');
+    }
+
+    // --- Virtual Dipstick Logic ---
+    function analyzeOil(color) {
+        const panel = document.getElementById('analysis-panel');
+        const iconContainer = document.getElementById('analysis-icon-container');
+        const icon = document.getElementById('analysis-icon');
+        const title = document.getElementById('analysis-title');
+        const text = document.getElementById('analysis-text');
+        const statusLabel = document.getElementById('dipstick-status-label');
+        const scanner = document.getElementById('scanner-line');
+        const wearScore = document.getElementById('wear-score');
+        const wearIcon = document.getElementById('wear-icon');
+        const viscPercent = document.getElementById('visc-percent');
+        const viscBar = document.getElementById('visc-bar');
+
+        const analyses = {
+            pristine: {
+                label: 'Pristine', color: 'text-green-500', icon: 'fa-check-circle',
+                title: 'Optimal Molecular Integrity', text: 'Your oil shows zero high-temp oxidation. Perfect film strength maintained.',
+                visc: 100, wear: 0, theme: 'green'
+            },
+            good: {
+                label: 'Healthy', color: 'text-yellow-500', icon: 'fa-exclamation-circle',
+                title: 'Minor Additive Depletion', text: 'Starting to see slight thermal breakdown. Still providing 90% protection.',
+                visc: 90, wear: 12, theme: 'yellow'
+            },
+            aged: {
+                label: 'Thermal Fatigue', color: 'text-orange-500', icon: 'fa-history',
+                title: 'Significant Viscosity Loss', text: 'Oil is thickening due to carbon buildup. Friction levels are rising.',
+                visc: 72, wear: 35, theme: 'orange'
+            },
+            critical: {
+                label: 'Urgent Service', color: 'text-red-500', icon: 'fa-skull',
+                title: 'Severe Acid Buildup', text: 'Corrosive byproducts detected. Oil is losing its ability to neutralize pH.',
+                visc: 45, wear: 68, theme: 'red'
+            },
+            danger: {
+                label: 'Catastrophic Risk', color: 'text-red-700', icon: 'fa-radiation',
+                title: 'Abrasive Sludge Detected', text: 'High metal particulate count. Immediate flush required to save camshafts.',
+                visc: 12, wear: 94, theme: 'darkred'
+            }
+        };
+
+        const data = analyses[color];
+        
+        // 1. Show Scanner
+        scanner.classList.remove('hidden');
+        gsap.fromTo(scanner, { top: '0%' }, { top: '100%', duration: 1.5, ease: "power1.inOut", onComplete: () => scanner.classList.add('hidden') });
+
+        // 2. Update Panel
+        setTimeout(() => {
+            panel.classList.remove('hidden');
+            statusLabel.innerText = data.label;
+            statusLabel.className = `text-[10px] font-black uppercase tracking-widest ${data.color}`;
+            
+            title.innerText = data.title;
+            text.innerText = data.text;
+            
+            icon.className = `fas ${data.icon}`;
+            iconContainer.className = `w-16 h-16 rounded-2xl bg-${data.theme === 'green' ? 'green' : data.theme === 'yellow' ? 'yellow' : 'red'}-500/10 flex items-center justify-center ${data.color} text-2xl transition-colors duration-500`;
+            
+            // Stats animation
+            const statObj = { v: parseInt(viscPercent.innerText) || 0, w: parseInt(wearScore.innerText) || 0 };
+            gsap.to(statObj, {
+                v: data.visc,
+                w: data.wear,
+                duration: 2,
+                ease: "power2.out",
+                onUpdate: () => {
+                    viscPercent.innerText = `${Math.floor(statObj.v)}%`;
+                    wearScore.innerText = `${Math.floor(statObj.w)}%`;
+                    viscBar.style.width = `${statObj.v}%`;
+                }
+            });
+
+            // Icons & Bars Colors
+            viscPercent.className = `text-[10px] font-black ${data.color} transition-colors duration-500`;
+            viscBar.className = `h-full transition-all duration-1000 ${data.theme === 'green' ? 'bg-green-500' : data.theme === 'yellow' ? 'bg-yellow-500' : 'bg-red-600'}`;
+            wearIcon.className = `fas ${data.wear > 50 ? 'fa-biohazard' : data.wear > 30 ? 'fa-exclamation-triangle' : 'fa-shield-alt'} text-6xl ${data.color} mb-4 transition-all duration-500`;
+            
+        }, 500);
     }
 </script>
 {% endblock %}
