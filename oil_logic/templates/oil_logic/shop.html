@@ -1,4 +1,7 @@
 {% extends 'oil_logic/base.html' %}
+
+
+
 {% load static %}
 {% load shop_extras %}
 
@@ -141,7 +144,7 @@
             <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
                 {% for oil in oils %}
                 <div
-                    class="product-card group relative bg-[#0e0e0e] border border-white/5 rounded-3xl overflow-hidden transition-all duration-400 hover:-translate-y-2 hover:border-red-500/35 hover:shadow-2xl hover:shadow-red-900/20 flex flex-col">
+                    class="product-card liquid-glass group relative flex flex-col">
 
                     <!-- Image / Container -->
                     <div

@@ -1,28 +1,26 @@
 {% extends 'oil_logic/base.html' %}
 {% load static %}
 
+
+
+
 {% block content %}
 <!-- Hero Section -->
-<section id="hero" class="relative min-h-[80vh] flex flex-col items-center justify-center overflow-hidden bg-[#050505]">
-    <!-- 3D Canvas Background -->
-    <div id="engine-canvas-container" class="absolute inset-0 z-0 bg-[#050505]"></div>
-    <div class="absolute inset-0 z-0 bg-black/40 pointer-events-none"></div>
-    <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent z-10 pointer-events-none">
-    </div>
-
-    <div class="relative z-10 text-center px-6 max-w-5xl">
-        <h1 class="text-6xl md:text-8xl font-black tracking-tighter uppercase leading-tight mb-8">
-            SEE HOW <span class="text-red-600">OIL</span><br>TRANSFORMS PERFORMANCE
+<section id="hero" class="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a]">
+    <canvas id="hero-canvas" class="absolute inset-0 z-0"></canvas>
+    
+    <div class="relative z-10 text-center px-6 max-w-6xl">
+        <h1 class="hero-fade-up text-6xl md:text-8xl font-[900] tracking-tighter uppercase leading-[0.9] mb-8 text-white">
+            SEE HOW <span class="text-[#e03030]">OIL</span><br>TRANSFORMS PERFORMANCE
         </h1>
 
-        <p class="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed mb-12">
-            Experience precision lubrication that defines the future of engine protection. Our molecular alchemy ensures
-            your engine performs at its peak.
+        <p class="hero-fade-up text-xl md:text-2xl text-gray-500 max-w-3xl mx-auto font-light leading-relaxed mb-12" style="animation-delay: 0.2s;">
+            Engineering the molecular boundary between power and preservation. Our formula defines the absolute peak of automotive care.
         </p>
 
-        <div class="flex flex-wrap justify-center gap-6">
-            <a href="#recommendation-form"
-                class="px-12 py-6 rounded-full font-white text-sm uppercase tracking-[0.3em] bg-red text-black hover:bg-gold hover:text-white transition-all duration-500 shadow-2xl">
+        <div class="hero-fade-up flex flex-wrap justify-center gap-6" style="animation-delay: 0.4s;">
+            <a href="{% url 'recommendation_page' %}"
+                class="px-12 py-5 rounded-xl text-sm font-black uppercase tracking-[0.2em] bg-[#e03030] text-white hover:bg-white hover:text-black transition-all duration-300 shadow-2xl shadow-red-900/20 active:scale-95">
                 Start Recommendation
             </a>
         </div>
@@ -30,40 +28,75 @@
 </section>
 <!-- Mechanical Synergy Section -->
 <section id="mechanical-synergy" class="relative py-24 overflow-hidden bg-[#050505]">
+    <!-- Background Accents -->
+    <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-red-500/5 blur-[120px] rounded-full pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-red-500/5 blur-[100px] rounded-full pointer-events-none"></div>
+    
     <div class="max-w-7xl mx-auto px-6 relative z-10">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div class="space-y-8">
-                <p class="text-[10px] font-black uppercase tracking-[0.4em] text-red-500">System Integration</p>
-                <h2 class="text-6xl font-black uppercase tracking-tighter leading-none">
-                    The <span class="text-red-500">Harmony</span><br>of Power
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div class="space-y-10">
+                <div class="flex items-center gap-4">
+                    <span class="w-12 h-[1px] bg-red-500"></span>
+                    <p class="text-[10px] font-black uppercase tracking-[0.5em] text-red-500">Synergy Core</p>
+                </div>
+                
+                <h2 class="text-6xl md:text-7xl font-black uppercase tracking-tighter leading-[0.85] text-white">
+                    THE <span class="text-red-500">HARMONY</span><br>OF PURE POWER
                 </h2>
-                <p class="text-gray-400 text-lg max-w-lg leading-relaxed">
-                    Witness the molecular synergy between precision engineering and high-performance lubrication. Our
-                    technology bridges the gap between mechanical potential and absolute protection.
-                </p>
-                <div class="pt-8">
-                    <a href="{% url 'recommendation_page' %}" class="uiverse-synergy-btn">
-                        <span>START PROCESS NOW</span>
-                        <svg viewBox="0 0 13 10">
-                            <polygon points="2 1, 5 1, 4 8, 1 8"></polygon>
-                            <polygon points="6 1, 9 1, 8 8, 5 8"></polygon>
-                            <polygon points="10 1, 13 1, 12 8, 9 8"></polygon>
-                        </svg>
+                
+                <div class="space-y-6 max-w-lg">
+                    <p class="text-gray-400 text-xl font-light leading-relaxed">
+                        Witness the molecular synergy between precision engineering and high-performance lubrication. 
+                    </p>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Our technology bridges the gap between mechanical potential and absolute protection, ensuring every revolution is a masterpiece of efficiency.
+                    </p>
+                </div>
+
+                <div class="pt-8 flex flex-wrap gap-4">
+                    <a href="{% url 'recommendation_page' %}" class="btn-synergy">
+                        <span>START ANALYSIS</span>
+                        <i class="fas fa-microchip text-xs opacity-50"></i>
+                    </a>
+                    
+                    <a href="{% url 'academy' %}" class="flex items-center gap-4 px-8 py-4 rounded-full border border-white/10 text-xs font-black uppercase tracking-widest text-gray-400 hover:bg-white/5 hover:text-white transition-all group">
+                        Learn Technicals
+                        <i class="fas fa-arrow-right group-hover:translate-x-2 transition-transform"></i>
                     </a>
                 </div>
             </div>
 
             <!-- 3D Canvas Container -->
-            <div class="relative h-[600px] glass-premium rounded-[3rem] overflow-hidden border-red-500/10 group">
+            <div class="relative h-[650px] glass-premium rounded-[3.5rem] overflow-hidden border-white/5 shadow-2xl group">
                 <div id="synergy-canvas-container" class="absolute inset-0 cursor-grab active:cursor-grabbing"></div>
 
-                <!-- HUD Overlay -->
-                <div class="absolute bottom-8 left-8 right-8 flex justify-between items-end pointer-events-none">
-                    <div class="space-y-4">
-                        <div class="glass px-4 py-2 rounded-xl border-white/5 flex items-center gap-3">
-                            <div class="w-2 h-2 rounded-full bg-red-500 animate-ping"></div>
-                            <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">Synergy Analysis
-                                Active</span>
+                <!-- HUD Overlays -->
+                <div class="absolute inset-0 pointer-events-none p-12 flex flex-col justify-between">
+                    <div class="flex justify-between items-start">
+                        <div class="glass px-5 py-3 rounded-2xl border-white/5 flex items-center gap-4">
+                            <div class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-white">Simulation: Active</span>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                             <div class="w-1 h-6 bg-red-500/20 rounded-full"></div>
+                             <div class="w-1 h-12 bg-red-500/40 rounded-full"></div>
+                             <div class="w-1 h-4 bg-red-500/20 rounded-full"></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="flex flex-col gap-1">
+                            <p class="text-[8px] font-black uppercase tracking-widest text-gray-500">Load Matrix</p>
+                            <div class="text-2xl font-black tabular-nums text-white">94.8%</div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1 h-px bg-gradient-to-r from-red-500/50 to-transparent"></div>
+                            <i class="fas fa-atom text-red-500/20 animate-spin-slow"></i>
                         </div>
                     </div>
                 </div>
@@ -73,7 +106,7 @@
 </section>
 
 <!-- Highlights Section -->
-<section class="max-w-7xl mx-auto px-6 py-24 grid grid-cols-1 md:grid-cols-3 gap-12">
+<section class="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 gap-12">
     <div
         class="glass p-10 rounded-3xl space-y-4 hover:border-red-500/30 transition group relative overflow-hidden reveal-card">
         <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition">
@@ -116,7 +149,7 @@
 </section>
 
 <!-- Virtual Dipstick Section -->
-<section id="virtual-dipstick" class="max-w-7xl mx-auto px-6 py-24 relative overflow-hidden">
+<section id="virtual-dipstick" class="max-w-7xl mx-auto px-6 py-20 relative overflow-hidden">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div class="space-y-8 order-2 lg:order-1">
             <p class="text-[10px] font-black uppercase tracking-[0.4em] text-red-500">Real-time Diagnostics</p>
@@ -199,7 +232,7 @@
         </div>
     </div>
 </section>
-<section id="viscosity-section" class="max-w-7xl mx-auto px-6 py-24 relative overflow-hidden">
+<section id="viscosity-section" class="max-w-7xl mx-auto px-6 py-20 relative overflow-hidden">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <!-- Left: 3D Visualization -->
         <div class="relative h-[600px] glass-premium rounded-[3rem] overflow-hidden border-red-500/10 group">
@@ -403,7 +436,7 @@
     </div>
 </section>
 <!-- Product Range Section -->
-<section class="max-w-7xl mx-auto px-6 py-24 overflow-hidden">
+<section class="max-w-7xl mx-auto px-6 py-16 overflow-hidden">
     <div class="flex items-center justify-between mb-16">
         <h2 class="text-4xl font-black uppercase tracking-tighter">In This <span class="text-red-500">Section</span>
         </h2>
@@ -544,7 +577,7 @@
     }
 </style>
 
-<section class="border-y border-white/5 py-12 mb-24 overflow-hidden">
+<section class="border-y border-white/5 py-12 mb-16 overflow-hidden">
     <div class="max-w-7xl mx-auto px-6">
         <p class="text-center text-xs font-bold text-gray-500 uppercase tracking-widest mb-10">Trusted Engineering
             Partners</p>
@@ -560,7 +593,7 @@
 </section>
 
 <!-- Stats Counter Section -->
-<section class="max-w-4xl mx-auto px-6 py-24 text-center">
+<section class="max-w-4xl mx-auto px-6 py-16 text-center">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-12">
         <div class="space-y-2">
             <p class="text-4xl font-black text-red-500 stat-number" data-target="25" data-suffix="K+">0</p>
@@ -582,12 +615,72 @@
 </section>
 
 <style>
+    @keyframes heroFadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .hero-fade-up {
+        opacity: 0;
+        animation: heroFadeUp 1s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+    }
+
+    .btn-synergy {
+        --c-bg: #e03030;
+        --c-outline: rgba(224, 48, 48, 0.4);
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        text-decoration: none;
+        border: none;
+        border-radius: 9999px;
+        padding: 1.2rem 3rem;
+        font-family: 'Cormorant Garamond', serif;
+        font-weight: 900;
+        font-size: 0.9rem;
+        color: #fff;
+        background: var(--c-bg);
+        box-shadow: 0 15px 30px rgba(224, 48, 48, 0.2);
+        transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1);
+        text-transform: uppercase;
+        letter-spacing: 0.25em;
+        cursor: none;
+    }
+
+    .btn-synergy:hover {
+        background: #fff;
+        color: #000;
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-synergy:active {
+        transform: scale(0.96) translateY(-2px);
+    }
+
     .hero-grid {
         background-image:
             linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
         background-size: 50px 50px;
         background-position: center center;
+    }
+
+    @keyframes ken-burns {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .animate-ken-burns {
+        animation: ken-burns 30s infinite ease-in-out;
     }
 </style>
 {% endblock %}
@@ -609,226 +702,8 @@
     import * as THREE from 'three';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-    let scene, camera, renderer, engineGroup, clock = new THREE.Clock();
-    let crankshaft, pistons = [], conRods = [], oilLines = [];
-    let engineState = 'rough'; // 'rough', 'oiling', 'smooth'
-    let lubricationLevel = 0;
-    let engineSpeed = 1.0;
+    let clock = new THREE.Clock();
 
-    async function initAIHero() {
-        const container = document.getElementById('engine-canvas-container');
-        if (!container) return;
-
-        // --- Core Setup ---
-        scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x050505, 0.1);
-
-        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 2, 10);
-
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        container.appendChild(renderer.domElement);
-
-        // --- Lighting ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
-        scene.add(ambientLight);
-
-        const pointLight1 = new THREE.PointLight(0xff0000, 50);
-        pointLight1.position.set(10, 5, 5);
-        scene.add(pointLight1);
-
-        const pointLight2 = new THREE.PointLight(0x0088ff, 30);
-        pointLight2.position.set(-10, -5, 5);
-        scene.add(pointLight2);
-
-        const spotLight = new THREE.SpotLight(0xffffff, 100);
-        spotLight.position.set(0, 10, 0);
-        spotLight.angle = Math.PI / 6;
-        spotLight.penumbra = 0.5;
-        scene.add(spotLight);
-
-        engineGroup = new THREE.Group();
-        scene.add(engineGroup);
-
-        // --- Realistic Mechanical Components ---
-        const metalMat = new THREE.MeshStandardMaterial({
-            color: 0x444444, metalness: 1, roughness: 0.2,
-            envMapIntensity: 1
-        });
-        const chromeMat = new THREE.MeshStandardMaterial({
-            color: 0xffffff, metalness: 1, roughness: 0.05
-        });
-
-        // 1. Crankshaft
-        crankshaft = new THREE.Group();
-        const mainShaftGeo = new THREE.CylinderGeometry(0.2, 0.2, 5, 32);
-        const mainShaft = new THREE.Mesh(mainShaftGeo, chromeMat);
-        mainShaft.rotation.z = Math.PI / 2;
-        crankshaft.add(mainShaft);
-
-        // Crank pins (4 cylinders example)
-        for (let i = 0; i < 4; i++) {
-            const pinGroup = new THREE.Group();
-            const webGeo = new THREE.BoxGeometry(0.1, 1.2, 0.6);
-            const web1 = new THREE.Mesh(webGeo, metalMat);
-            const web2 = new THREE.Mesh(webGeo, metalMat);
-            web1.position.set(0, 0, 0.3);
-            web2.position.set(0, 0, -0.3);
-
-            const pinGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.6, 16);
-            const pin = new THREE.Mesh(pinGeo, chromeMat);
-            pin.rotation.z = Math.PI / 2;
-            pin.position.y = 0.5;
-
-            pinGroup.add(web1, web2, pin);
-            pinGroup.position.x = (i - 1.5) * 1.2;
-            pinGroup.rotation.x = (i * Math.PI) / 2; // Split pins
-            crankshaft.add(pinGroup);
-        }
-        engineGroup.add(crankshaft);
-
-        // 2. Pistons & Connecting Rods
-        for (let i = 0; i < 4; i++) {
-            const pistonGroup = new THREE.Group();
-
-            // Piston Head
-            const headGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.6, 32);
-            const head = new THREE.Mesh(headGeo, metalMat);
-            pistonGroup.add(head);
-
-            // Connecting Rod
-            const rodGeo = new THREE.BoxGeometry(0.15, 1.8, 0.2);
-            const rod = new THREE.Mesh(rodGeo, metalMat);
-            rod.position.y = -1.2;
-
-            pistonGroup.position.x = (i - 1.5) * 1.2;
-            pistonGroup.position.y = 3;
-
-            scene.add(pistonGroup);
-            pistons.push(pistonGroup);
-            conRods.push(rod);
-            pistonGroup.add(rod);
-        }
-
-        // 3. Lubrication Lines
-        const lineMat = new THREE.MeshBasicMaterial({ color: 0xaa8800, transparent: true, opacity: 0 });
-        for (let i = 0; i < 6; i++) {
-            const curve = new THREE.CatmullRomCurve3([
-                new THREE.Vector3((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2),
-                new THREE.Vector3((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2),
-                new THREE.Vector3((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2)
-            ]);
-            const tubeGeo = new THREE.TubeGeometry(curve, 20, 0.05, 8, false);
-            const tube = new THREE.Mesh(tubeGeo, lineMat.clone());
-            engineGroup.add(tube);
-            oilLines.push(tube);
-        }
-
-        // --- Cinematic Sequence (GSAP) ---
-        const mainTl = gsap.timeline({ repeat: -1 });
-
-        // Phase 1: Rough Start
-        mainTl.to({}, { duration: 3, onStart: () => { engineState = 'rough'; } });
-
-        // Phase 2: Oiling
-        mainTl.to({}, {
-            duration: 2,
-            onStart: () => { engineState = 'oiling'; },
-            onUpdate: function () {
-                lubricationLevel = this.progress();
-                oilLines.forEach(line => {
-                    line.material.opacity = lubricationLevel * 0.8;
-                });
-            }
-        });
-
-        // Phase 3: Smooth Power
-        mainTl.to({}, {
-            duration: 5,
-            onStart: () => { engineState = 'smooth'; },
-            onUpdate: function () {
-                engineSpeed = 1.0 + this.progress() * 2.0;
-            }
-        });
-
-        // --- Cinematic Camera Sequence (Linked to Main Timeline) ---
-        const camTl = gsap.timeline({ repeat: -1 });
-
-        // Phase 1: Close-up on moving pistons/crank (Rough Start)
-        camTl.fromTo(camera.position,
-            { x: -2, y: 1, z: 3 },
-            { x: 2, y: 1, z: 3, duration: 3, ease: "none" }
-        );
-
-        // Phase 2: Detail pan on lubrication lines (Oiling)
-        camTl.to(camera.position, {
-            x: 0, y: 4, z: 6,
-            duration: 2,
-            ease: "power2.inOut"
-        });
-
-        // Phase 3: Majestic zoom out and rotation (Smooth Power)
-        camTl.to(camera.position, {
-            x: 0, y: 2, z: 12,
-            duration: 5,
-            ease: "sine.inOut"
-        });
-
-        // Add a secondary slow rotation to the engine group itself for extra cinematic feel
-        gsap.to(engineGroup.rotation, {
-            y: Math.PI * 2,
-            duration: 25,
-            repeat: -1,
-            ease: "none"
-        });
-
-        animate();
-    }
-
-    function animate() {
-        requestAnimationFrame(animate);
-        const time = clock.getElapsedTime() * engineSpeed;
-
-        // Mechanical Animation Logic
-        if (crankshaft) {
-            crankshaft.rotation.x += 0.05 * engineSpeed;
-
-            // Shake effect for "rough" state
-            if (engineState === 'rough') {
-                engineGroup.position.set(
-                    (Math.random() - 0.5) * 0.05,
-                    (Math.random() - 0.5) * 0.05,
-                    (Math.random() - 0.5) * 0.05
-                );
-            } else {
-                engineGroup.position.set(0, 0, 0);
-            }
-        }
-
-        pistons.forEach((p, i) => {
-            const angle = crankshaft.rotation.x + (i * Math.PI) / 2;
-            const yOffset = Math.sin(angle) * 0.5;
-            p.position.y = 2.5 + yOffset;
-
-            // Connecting rod rotation adjustment
-            conRods[i].rotation.z = Math.cos(angle) * 0.2;
-        });
-
-        if (renderer && scene && camera) {
-            renderer.render(scene, camera);
-        }
-    }
-
-
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    initAIHero();
 
     // --- 3D Molecule Visualization (Synergy) ---
     function initMechanicalSynergy() {
@@ -1508,5 +1383,85 @@
             
         }, 500);
     }
+
+    // --- Hero Canvas Animation ---
+    function initHeroCanvas() {
+        const canvas = document.getElementById('hero-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let nodes = [];
+        const nodeCount = 60;
+        const maxDistance = 100;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = canvas.parentElement.offsetHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Node {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.isRed = Math.random() < 0.15;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.fillStyle = this.isRed ? '#e03030' : '#444';
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < nodeCount; i++) {
+            nodes.push(new Node());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            for (let i = 0; i < nodes.length; i++) {
+                const a = nodes[i];
+                a.update();
+                a.draw();
+
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const b = nodes[j];
+                    const dx = a.x - b.x;
+                    const dy = a.y - b.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < maxDistance) {
+                        ctx.beginPath();
+                        ctx.moveTo(a.x, a.y);
+                        ctx.lineTo(b.x, b.y);
+                        const opacity = 1 - (dist / maxDistance);
+                        ctx.strokeStyle = (a.isRed && b.isRed) ? `rgba(224, 48, 48, ${opacity * 0.5})` : `rgba(100, 100, 100, ${opacity * 0.2})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    }
+
+    initHeroCanvas();
 </script>
 {% endblock %}

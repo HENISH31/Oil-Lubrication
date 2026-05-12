@@ -222,3 +222,26 @@ class RecommendationFeedback(models.Model):
     def __str__(self):
         return f"Feedback for {self.recommended_oil.brand} - Helper: {self.is_helpful}"
 
+
+class Garage(models.Model):
+    SOURCES = [
+        ('google', 'Google Maps'),
+        ('osm', 'OpenStreetMap'),
+        ('manual', 'Manual Entry'),
+    ]
+
+    name = models.CharField(max_length=255)
+    address = models.TextField()
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    rating = models.FloatField(default=0.0)
+    reviews_count = models.IntegerField(default=0)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    place_id = models.CharField(max_length=255, unique=True, help_text="Unique ID from source API")
+    source = models.CharField(max_length=20, choices=SOURCES, default='google')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.source})"

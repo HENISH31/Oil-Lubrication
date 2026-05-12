@@ -87,3 +87,13 @@ class OilRecommendationForm(forms.Form):
         choices=Maintenance.OIL_CHANGE_FREQUENCIES,
         widget=forms.Select(attrs={'class': 'form-select'})
     )
+
+class LocatorForm(forms.Form):
+    q = forms.CharField(
+        label="City or Zip Code",
+        max_length=255,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Enter City or Zip Code',
+            'class': 'w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-gray-600 focus:border-red-500/50 focus:outline-none transition-all'
+        })
+    )

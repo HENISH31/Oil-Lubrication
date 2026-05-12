@@ -1,8 +1,8 @@
 const CACHE_NAME = 'oilrec-cache-v1';
 const ASSETS_TO_CACHE = [
   '/',
-  '/static/manifest.json',
-  '/static/css/styles.css',
+  '/static/pwa/manifest.json',
+  '/static/favicon.ico',
   'https://cdn.tailwindcss.com',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
 ];

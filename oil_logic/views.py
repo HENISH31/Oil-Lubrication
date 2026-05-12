@@ -9,7 +9,7 @@ recommender = AIOilRecommender()
 from .serializers import OilSerializer, VehicleSerializer, MaintenanceSerializer, UserSerializer
 from .utils import send_order_confirmation_email
 from django.http import JsonResponse
-from .services import VehicleLookupService, AIAgentService
+from .services import VehicleLookupService, AIAgentService, GarageLocatorService
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
@@ -26,8 +26,10 @@ def home(request):
 def academy(request):
     return render(request, 'oil_logic/academy.html')
 
-def showcase(request):
-    return render(request, 'oil_logic/showcase.html')
+def service_locator(request):
+    return render(request, 'oil_logic/service_locator.html', {
+        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY
+    })
 
 @login_required
 def recommendation_page(request):
@@ -98,12 +100,7 @@ def shop_page(request):
         'vehicle_type_options': ['Car', 'Bike', 'Scooter', 'Truck'],
     })
 
-from .forms import CustomRegistrationForm
-
-def brands_view(request):
-    # Query distinct brand names from the Oil model
-    brands = Oil.objects.values_list('brand', flat=True).distinct().order_by('brand')
-    return render(request, 'oil_logic/brands.html', {'brands': brands})
+from .forms import CustomRegistrationForm, LocatorForm
 
 def register(request):
     if request.method == 'POST':
@@ -789,3 +786,17 @@ class SubmitFeedbackView(generics.GenericAPIView):
             pass
             
         return Response({"status": "error", "message": "Query not found"}, status=404)
+
+def search_garages(request):
+    query = request.GET.get('q')
+    lat = request.GET.get('lat') # From geolocation
+    lng = request.GET.get('lng') # From geolocation
+    
+    if not query and not (lat and lng):
+        return JsonResponse({'status': 'error', 'message': 'Search term or location required'}, status=400)
+    
+    results = GarageLocatorService.search_best_garages(query, lat, lng)
+    return JsonResponse({
+        'status': 'success',
+        'results': results
+    })

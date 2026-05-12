@@ -51,29 +51,48 @@ def seed_more_data():
                     )
 
     # Adding diverse vehicles (2010 - 2026)
-    vehicles_data = [
-        # Older models (2010-2015)
-        {'brand': 'Honda', 'model': 'Civic', 'year': 2010, 'engine_type': 'Petrol', 'displacement_cc': 1800, 'oil_type': 'Mineral', 'viscosity': '10W-30'},
-        {'brand': 'Toyota', 'model': 'Corolla', 'year': 2012, 'engine_type': 'Petrol', 'displacement_cc': 1800, 'oil_type': 'Semi-Synthetic', 'viscosity': '5W-30'},
-        {'brand': 'Maruti Suzuki', 'model': 'Swift', 'year': 2011, 'engine_type': 'Diesel', 'displacement_cc': 1300, 'oil_type': 'Semi-Synthetic', 'viscosity': '5W-40'},
-        {'brand': 'Hyundai', 'model': 'i10', 'year': 2013, 'engine_type': 'Petrol', 'displacement_cc': 1100, 'oil_type': 'Mineral', 'viscosity': '10W-40'},
-        {'brand': 'Mahindra', 'model': 'Scorpio', 'year': 2014, 'engine_type': 'Diesel', 'displacement_cc': 2200, 'oil_type': 'Semi-Synthetic', 'viscosity': '15W-40'},
-        
-        # Mid-range models (2016-2020)
-        {'brand': 'Honda', 'model': 'City', 'year': 2017, 'engine_type': 'Petrol', 'displacement_cc': 1500, 'oil_type': 'Synthetic', 'viscosity': '0W-20'},
-        {'brand': 'Toyota', 'model': 'Fortuner', 'year': 2018, 'engine_type': 'Diesel', 'displacement_cc': 2800, 'oil_type': 'Synthetic', 'viscosity': '5W-30'},
-        {'brand': 'Hyundai', 'model': 'Creta', 'year': 2019, 'engine_type': 'Diesel', 'displacement_cc': 1600, 'oil_type': 'Synthetic', 'viscosity': '5W-30'},
-        {'brand': 'Ford', 'model': 'EcoSport', 'year': 2016, 'engine_type': 'Petrol', 'displacement_cc': 1500, 'oil_type': 'Semi-Synthetic', 'viscosity': '5W-30'},
-        
-        # Recent & Future models (2021-2026)
-        {'brand': 'Honda', 'model': 'Elevate', 'year': 2024, 'engine_type': 'Petrol', 'displacement_cc': 1500, 'oil_type': 'Synthetic', 'viscosity': '0W-20'},
-        {'brand': 'Toyota', 'model': 'Urban Cruiser', 'year': 2025, 'engine_type': 'Petrol', 'displacement_cc': 1500, 'oil_type': 'Synthetic', 'viscosity': '0W-20'},
-        {'brand': 'Maruti Suzuki', 'model': 'Fronx', 'year': 2024, 'engine_type': 'Petrol', 'displacement_cc': 1000, 'oil_type': 'Synthetic', 'viscosity': '0W-16'},
-        {'brand': 'Mahindra', 'model': 'XUV700', 'year': 2024, 'engine_type': 'Diesel', 'displacement_cc': 2200, 'oil_type': 'Synthetic', 'viscosity': '5W-30'},
-        {'brand': 'Hyundai', 'model': 'Ioniq 5', 'year': 2026, 'engine_type': 'Petrol', 'displacement_cc': 0, 'oil_type': 'Synthetic', 'viscosity': '0W-20'}, # Mocking for hybrid/future tech
-        {'brand': 'Tata', 'model': 'Harrier', 'year': 2025, 'engine_type': 'Diesel', 'displacement_cc': 2000, 'oil_type': 'Synthetic', 'viscosity': '0W-30'},
-        {'brand': 'Kia', 'model': 'Seltos', 'year': 2026, 'engine_type': 'Petrol', 'displacement_cc': 1500, 'oil_type': 'Synthetic', 'viscosity': '0W-20'},
-    ]
+    brand_models = {
+        'Honda': ['Civic', 'City', 'Accord', 'Amaze', 'CR-V', 'WR-V', 'Jazz', 'Brio', 'Elevate'],
+        'Toyota': ['Corolla', 'Camry', 'Fortuner', 'Innova', 'Yaris', 'Etios', 'Glanza', 'Urban Cruiser', 'Hilux'],
+        'Maruti Suzuki': ['Swift', 'Baleno', 'Alto', 'WagonR', 'Dzire', 'Ertiga', 'Brezza', 'Celerio', 'S-Cross', 'Ignis', 'Fronx', 'Jimny'],
+        'Hyundai': ['i10', 'i20', 'Creta', 'Verna', 'Tucson', 'Venue', 'Santro', 'Aura', 'Alcazar', 'Ioniq 5'],
+        'Mahindra': ['Scorpio', 'Bolero', 'XUV500', 'XUV700', 'Thar', 'XUV300', 'Marazzo', 'KUV100'],
+        'Tata': ['Nexon', 'Harrier', 'Safari', 'Tiago', 'Tigor', 'Altroz', 'Punch', 'Hexa'],
+        'Kia': ['Seltos', 'Sonet', 'Carens', 'Carnival', 'EV6'],
+        'Ford': ['EcoSport', 'Endeavour', 'Figo', 'Aspire', 'Freestyle', 'Mustang'],
+        'Volkswagen': ['Polo', 'Vento', 'Taigun', 'Virtus', 'Tiguan', 'Passat', 'Jetta'],
+        'Skoda': ['Slavia', 'Kushaq', 'Octavia', 'Superb', 'Rapid', 'Kodiaq'],
+        'Renault': ['Kwid', 'Duster', 'Kiger', 'Triber', 'Captur'],
+        'Nissan': ['Magnite', 'Kicks', 'Micra', 'Sunny', 'Terrano'],
+        'MG': ['Hector', 'Astor', 'Gloster', 'ZSEV', 'Comet'],
+    }
+
+    engine_types = ['Petrol', 'Diesel']
+    oil_types = ['Synthetic', 'Semi-Synthetic', 'Mineral']
+    
+    # We use the viscosities from the seeded oils above
+    viscosities_list = ['0W-20', '5W-30', '10W-40', '15W-50']
+    
+    vehicles_data = []
+    
+    # Generate around 950 unique vehicles (95 models * 10 years)
+    for brand, models in brand_models.items():
+        for model in models:
+            for year in range(2015, 2025):
+                engine = random.choice(engine_types)
+                displacement = random.choice([1000, 1200, 1500, 1800, 2000, 2200, 2500])
+                oil_type = random.choice(oil_types)
+                viscosity = random.choice(viscosities_list)
+                
+                vehicles_data.append({
+                    'brand': brand,
+                    'model': model,
+                    'year': year,
+                    'engine_type': engine,
+                    'displacement_cc': displacement,
+                    'oil_type': oil_type,
+                    'viscosity': viscosity
+                })
     
     for v_entry in vehicles_data:
         # Find a suitable oil to recommend

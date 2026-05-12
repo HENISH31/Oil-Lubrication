@@ -5,222 +5,444 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}OilRec | Premium Automotive Care{% endblock %}</title>
+    <title>{% block title %}OilRec | Precision Engine Care{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="manifest" href="{% static 'pwa/manifest.json' %}">
-    <meta name="theme-color" content="#FF4D4D">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <meta name="theme-color" content="#FF2D2D">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
-        
+        /* ══════════════════════════════════════
+           DESIGN TOKENS
+        ══════════════════════════════════════ */
         :root {
-            /* ── Default Dark (Garage) Mode ── */
-            --bg-primary: #0A0A0A;
-            --bg-secondary: #141414;
-            --text-primary: #ffffff;
-            --text-muted: #6b7280;
-            --card-bg: rgba(20, 20, 20, 0.85);
-            --border-col: rgba(255, 255, 255, 0.06);
-            --glass-bg: rgba(10, 10, 10, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.05);
-            --accent: #FF4D4D;
-            --accent-glow: 0 0 20px rgba(255, 77, 77, 0.3);
+            --bg-primary: #050505;
+            --bg-secondary: #0f0f0f;
+            --bg-tertiary: #161616;
+            --text-primary: #f5f5f5;
+            --text-muted: #555555;
+            --accent: #FF2D2D;
+            --accent-dark: #9B0000;
+            --accent-dim: rgba(255, 45, 45, 0.08);
+            --accent-glow: rgba(255, 45, 45, 0.25);
+            --border: rgba(255, 255, 255, 0.06);
+            --border-red: rgba(255, 45, 45, 0.18);
+            --card-bg: rgba(18, 18, 18, 0.85);
+            --glass-bg: rgba(5, 5, 5, 0.75);
+            --font-text: 'Cormorant Garamond', serif;
+            --font-nums: 'Outfit', sans-serif;
         }
 
-        html.light {
-            --bg-primary: #F8FAFC;
-            --bg-secondary: #F1F5F9;
-            --text-primary: #1E293B;
-            --text-muted: #64748B;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --border-col: rgba(0, 0, 0, 0.05);
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(0, 0, 0, 0.05);
-            --accent: #D10000;
-            --accent-glow: 0 4px 15px rgba(209, 0, 0, 0.2);
-            color-scheme: light;
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: var(--font-text);
             background-color: var(--bg-primary);
             color: var(--text-primary);
             overflow-x: hidden;
-            transition: background-color 0.5s ease, color 0.5s ease;
+            cursor: none;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
-        .glass {
-            background: rgba(10, 10, 10, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--glass-border);
+        /* Target numbers globally to use Outfit */
+        .font-nums, 
+        [class*="price"], 
+        [class*="rating"], 
+        [class*="stat"], 
+        [class*="count"], 
+        .km-display {
+            font-family: var(--font-nums) !important;
+            font-variant-numeric: tabular-nums;
         }
 
-        .glass-premium {
-            background: rgba(20, 20, 20, 0.85);
-            /* Slightly darker, more opaque */
-            backdrop-filter: blur(20px);
-            /* Much stronger blur for better glass effect */
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            /* Brighter border */
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #FF4D4D 0%, #B30000 100%);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .btn-primary:hover::after {
-            opacity: 1;
-        }
-
-        .btn-primary:hover {
-            box-shadow: var(--neon-red);
-            transform: translateY(-2px);
-        }
-
-        /* Custom Scrollbar - High Visibility */
-        ::-webkit-scrollbar {
+        /* ══════════════════════════════════════
+           CUSTOM CURSOR
+        ══════════════════════════════════════ */
+        #cursor-dot {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s, width 0.2s, height 0.2s;
+        }
+
+        #cursor-ring {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 32px;
+            height: 32px;
+            border: 1.5px solid var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99998;
+            transform: translate(-50%, -50%);
+            transition: width 0.25s, height 0.25s, opacity 0.25s, border-color 0.25s;
+            opacity: 0.45;
+        }
+
+        body:has(a:hover) #cursor-ring,
+        body:has(button:hover) #cursor-ring {
+            width: 48px;
+            height: 48px;
+            opacity: 0.85;
+            border-color: #fff;
+        }
+
+        /* ══════════════════════════════════════
+           GRAIN / NOISE OVERLAY
+        ══════════════════════════════════════ */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+            opacity: 0.022;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ══════════════════════════════════════
+           SCROLLBAR
+        ══════════════════════════════════════ */
+        ::-webkit-scrollbar {
+            width: 4px;
         }
 
         ::-webkit-scrollbar-track {
-            background: #050505;
+            background: var(--bg-primary);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #444;
-            border-radius: 10px;
-            border: 2px solid #050505;
+            background: var(--accent-dark);
+            border-radius: 2px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #FF4D4D;
+            background: var(--accent);
         }
 
-        /* Force Dark Selection Dropdowns - Robust Fix */
-        select,
-        select option {
-            background-color: #0A0A0A !important;
-            color: #ffffff !important;
+        /* ══════════════════════════════════════
+           LIQUID GLASS SYSTEM
+        ══════════════════════════════════════ */
+        .glass, .glass-premium, .liquid-glass, .product-card, .place-card {
+            position: relative;
+            background: rgba(20, 20, 20, 0.45);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            isolation: isolate;
         }
 
-        /* Removing default arrow to avoid white background issues on some browsers */
-        select {
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1.5rem center;
-            background-size: 1rem;
-            padding-right: 3rem;
+        .glass-premium, .liquid-glass, .product-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            box-shadow: 
+                0 10px 40px -10px rgba(0, 0, 0, 0.5),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Global Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+        /* The "Liquid" Shimmer Effect */
+        .glass::before, .glass-premium::before, .liquid-glass::before, .product-card::before {
+            content: '';
+            position: absolute;
+            top: -150%;
+            left: -150%;
+            width: 300%;
+            height: 300%;
+            background: conic-gradient(
+                from 0deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.03) 30%,
+                rgba(255, 255, 255, 0.08) 50%,
+                rgba(255, 255, 255, 0.03) 70%,
+                transparent 100%
+            );
+            animation: rotate-liquid 10s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.5;
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        @keyframes rotate-liquid {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+        /* Organic Hover Elevation */
+        .glass-premium:hover, .liquid-glass:hover, .product-card:hover {
+            border-color: rgba(255, 45, 45, 0.4);
+            box-shadow: 
+                0 20px 60px -15px rgba(255, 45, 45, 0.15),
+                inset 0 0 25px rgba(255, 45, 45, 0.05);
+            transform: translateY(-8px) scale(1.01);
         }
 
-        .animate-fade-in {
-            animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        /* Light Refraction Edge */
+        .glass-premium::after, .liquid-glass::after, .product-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, transparent 40%, transparent 60%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.6;
+            mix-blend-mode: overlay;
         }
 
-        .animate-slide-up {
-            animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        /* ══════════════════════════════════════
+           LOGO
+        ══════════════════════════════════════ */
+        .logo-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 900;
+            font-style: italic;
+            font-size: 26px;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
         }
 
-        .animate-scale-in {
-            animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
-        .page-transition {
-            opacity: 0;
-        }
-
-        /* ── Modern Button Effect (Uiverse inspired) ── */
-        .cssbuttons-io-button {
-            background: #FF4D4D;
-            color: white;
-            font-family: inherit;
-            padding: 0.35em;
-            padding-left: 1.2em;
-            font-size: 11px;
-            font-weight: 800;
-            border-radius: 12px;
-            border: none;
+        /* ══════════════════════════════════════
+           NAV LINKS — red underline grow
+        ══════════════════════════════════════ */
+        .nav-link {
+            position: relative;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 13px;
+            font-weight: 700;
             letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #555;
+            transition: color 0.3s, opacity 0.3s, filter 0.3s, transform 0.3s;
+            padding: 5px 0;
+            white-space: nowrap;
+        }
+
+        .nav-group:hover .nav-link {
+            opacity: 0.4;
+            filter: blur(1.8px);
+        }
+
+        .nav-group .nav-link:hover {
+            opacity: 1;
+            filter: blur(0);
+            transform: scale(1.05);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            right: 50%;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: left 0.3s ease, right 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            left: 0;
+            right: 0;
+        }
+
+        .nav-link.active {
+            color: #fff;
+        }
+
+        /* ══════════════════════════════════════
+           BUTTON SYSTEM
+        ══════════════════════════════════════ */
+
+        /* 1 — Primary ignite button (shimmer sweep) */
+        .btn-ignite {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 22px;
+            background: var(--accent);
+            color: #fff;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 6px;
+            cursor: none;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-ignite::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.16) 50%, transparent 60%);
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
+        }
+
+        .btn-ignite:hover::before {
+            transform: translateX(100%);
+        }
+
+        .btn-ignite:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px var(--accent-glow), 0 0 0 1px rgba(255, 45, 45, 0.35);
+        }
+
+        .btn-ignite:active {
+            transform: scale(0.97);
+        }
+
+        .btn-ignite .icon-circle {
+            width: 22px;
+            height: 22px;
+            background: rgba(0, 0, 0, 0.22);
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            box-shadow: inset 0 0 1.6em -0.6em #B30000;
+            justify-content: center;
+            font-size: 9px;
+            flex-shrink: 0;
+            transition: background 0.3s;
+        }
+
+        .btn-ignite:hover .icon-circle {
+            background: rgba(0, 0, 0, 0.38);
+        }
+
+        /* 2 — Ghost outline button */
+        .btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            background: transparent;
+            color: #888;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            cursor: none;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--accent);
+            color: #fff;
+            background: var(--accent-dim);
+        }
+
+        /* 3 — Arrow text button (subtle, for secondary actions) */
+        .btn-arrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            color: #666;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: none;
+            text-decoration: none;
+            transition: color 0.3s, gap 0.3s;
+        }
+
+        .btn-arrow .arr {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #2a2a2a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            flex-shrink: 0;
+            transition: background 0.3s, border-color 0.3s, transform 0.3s;
+        }
+
+        .btn-arrow:hover {
+            color: #fff;
+            gap: 16px;
+        }
+
+        .btn-arrow:hover .arr {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: rotate(45deg);
+        }
+
+        /* 4 — Uiverse-style expand icon button (for navbar CTA) */
+        .cssbuttons-io-button {
+            background: var(--accent);
+            color: white;
+            font-family: 'Cormorant Garamond', serif;
+            padding: 0.3em 0.3em 0.3em 1.1em;
+            font-size: 12px;
+            font-weight: 800;
+            border-radius: 8px;
+            border: none;
+            letter-spacing: 0.15em;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: inset 0 0 1.4em -0.5em var(--accent-dark);
             overflow: hidden;
             position: relative;
-            height: 2.8em;
-            padding-right: 3.3em;
-            cursor: pointer;
+            height: 2.6em;
+            padding-right: 3em;
+            cursor: none;
             text-transform: uppercase;
-            transition: all 0.3s;
+            transition: box-shadow 0.3s, transform 0.2s;
+            text-decoration: none;
+        }
+
+        .cssbuttons-io-button:hover {
+            box-shadow: 0 6px 20px var(--accent-glow);
+            transform: translateY(-1px);
         }
 
         .cssbuttons-io-button .icon {
             background: white;
-            margin-left: 1em;
             position: absolute;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 2.2em;
-            width: 2.2em;
-            border-radius: 10px;
-            box-shadow: 0.1em 0.1em 0.6em 0.2em rgba(179, 0, 0, 0.2);
+            height: 2em;
+            width: 2em;
+            border-radius: 6px;
             right: 0.3em;
-            transition: all 0.3s;
+            transition: width 0.3s;
         }
 
         .cssbuttons-io-button:hover .icon {
@@ -228,199 +450,83 @@
         }
 
         .cssbuttons-io-button .icon svg {
-            width: 1.1em;
+            width: 1em;
             transition: transform 0.3s;
-            color: #FF4D4D;
+            color: var(--accent);
         }
 
         .cssbuttons-io-button:hover .icon svg {
             transform: translateX(0.1em);
         }
 
-        .cssbuttons-io-button:active .icon {
-            transform: scale(0.95);
-        }
-
-        /* --- Neomorphic / Uiverse Styles --- */
-        .uiverse-btn {
-            --hover-shadows: 16px 16px 33px #050505, -16px -16px 33px #1a1a1a;
-            --accent: #FF4D4D;
-            font-weight: bold;
-            letter-spacing: 0.1em;
-            border: none;
-            background-color: #111;
-            cursor: pointer;
-            color: white;
-            transition: box-shadow ease-in-out 0.3s, background-color ease-in-out 0.1s,
-                letter-spacing ease-in-out 0.1s, transform ease-in-out 0.1s;
-            box-shadow: 10px 10px 20px #050505, -10px -10px 20px #181818;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .uiverse-btn:hover {
-            box-shadow: var(--hover-shadows);
-        }
-
-        .uiverse-btn:active {
-            box-shadow: var(--hover-shadows), var(--accent) 0px 0px 30px 5px;
-            background-color: var(--accent);
-            transform: scale(0.95);
-        }
-
-        /* Neomorphic Inputs */
-        select, input#year-input, #driving-condition, #mileage-range, #preferred-frequency {
-            box-shadow: inset 5px 5px 10px #050505, inset -5px -5px 10px #121212 !important;
-            border: 1px solid rgba(255, 255, 255, 0.02) !important;
-        }
-
-        /* --- Shine Effect for Nav REMOVED - Using Underline Instead --- */
-        .btn-shine {
-            color: #fff;
-            font-weight: 600;
-            text-decoration: none;
-            white-space: nowrap;
-            transition: color 0.3s;
-        }
-
-        .btn-shine:hover {
-            color: #FF4D4D; /* Optional: text color change on hover to match red line */
-        }
-
-        /* --- Growing Underline/Overline Effect --- */
-        .btn-shine {
-            position: relative;
-            padding: 4px 0;
-            display: inline-block;
-        }
-
-        .btn-shine::before {
-            margin-left: auto;
-        }
-
-        .btn-shine::after, .btn-shine::before {
-            content: '';
-            width: 0%;
-            height: 2px;
-            background: #FF4D4D;
-            display: block;
-            transition: 0.5s;
-        }
-
-        .btn-shine:hover::after, .btn-shine:hover::before {
-            width: 100%;
-        }
-
-        /* --- Li-Deheng Uiverse Button Effect --- */
-        .uiverse-synergy-btn {
-            --main-size: 1.25rem;
-            --color-text: #ffffff;
-            --color-background: #B30000;
-            --color-background-hover: #FF4D4D;
-            --color-outline: #ff4d4d40;
-            --color-shadow: #00000080;
-            cursor: pointer;
+        /* 5 — Synergy pulsing hero button */
+        .btn-synergy {
+            --c-bg: var(--accent-dark);
+            --c-bg2: var(--accent);
+            --c-outline: rgba(255, 45, 45, 0.35);
             display: inline-flex;
             justify-content: center;
             align-items: center;
+            gap: 10px;
             text-decoration: none;
             border: none;
             border-radius: 9999px;
-            padding: 1.25rem 2.5rem;
+            padding: 1rem 2.2rem;
+            font-family: 'Cormorant Garamond', serif;
             font-weight: 900;
-            font-size: var(--main-size);
-            color: var(--color-text);
-            background: var(--color-background);
-            box-shadow: 0 0 10px 0 var(--color-background);
-            transition: 0.5s;
+            font-size: 1.1rem;
+            color: #fff;
+            background: var(--c-bg);
+            box-shadow: 0 0 12px 0 var(--c-bg);
+            transition: 0.45s;
             text-transform: uppercase;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.18em;
+            cursor: none;
         }
 
-        .uiverse-synergy-btn:active {
-            transform: scale(0.95);
+        .btn-synergy:hover {
+            box-shadow: 0 0 2em 0 var(--c-bg);
+            animation: syn-ripple 1s linear infinite, syn-color 1s infinite;
         }
 
-        .uiverse-synergy-btn:hover {
-            outline: 0.1em solid transparent;
-            outline-offset: 0.2em;
-            box-shadow: 0 0 1.5em 0 var(--color-background);
-            animation: ripple 1s linear infinite, colorize 1s infinite;
-            transition: 0.5s;
-            color: white;
+        .btn-synergy:active {
+            transform: scale(0.96);
         }
 
-        .uiverse-synergy-btn span {
-            margin-right: 0.3em;
-            transition: 0.5s;
+        @keyframes syn-ripple {
+            0% {
+                outline: 0em solid transparent;
+                outline-offset: -0.1em;
+            }
+
+            50% {
+                outline: 0.18em solid var(--c-outline);
+                outline-offset: 0.2em;
+            }
+
+            100% {
+                outline: 0.35em solid transparent;
+                outline-offset: 0.4em;
+            }
         }
 
-        .uiverse-synergy-btn:hover span {
-            text-shadow: 5px 5px 5px var(--color-shadow);
+        @keyframes syn-color {
+
+            0%,
+            100% {
+                background: var(--c-bg);
+            }
+
+            50% {
+                background: var(--c-bg2);
+            }
         }
 
-        .uiverse-synergy-btn svg {
-            height: 1em;
-            fill: var(--color-text);
-            margin-right: -0.16em;
-            position: relative;
-            transition: 0.5s;
-        }
-
-        .uiverse-synergy-btn:hover svg {
-            margin-right: 0.25em;
-            transition: 0.5s;
-            filter: drop-shadow(5px 5px 2.5px var(--color-shadow));
-        }
-
-        .uiverse-synergy-btn svg polygon:nth-child(1) {
-            transition: 0.4s;
-            transform: translateX(-60%);
-        }
-
-        .uiverse-synergy-btn svg polygon:nth-child(2) {
-            transition: 0.5s;
-            transform: translateX(-30%);
-        }
-
-        .uiverse-synergy-btn:hover svg polygon:nth-child(1) {
-            transform: translateX(0%);
-            animation: opacity 1s infinite 0.6s;
-        }
-
-        .uiverse-synergy-btn:hover svg polygon:nth-child(2) {
-            transform: translateX(0%);
-            animation: opacity 1s infinite 0.4s;
-        }
-
-        .uiverse-synergy-btn:hover svg polygon:nth-child(3) {
-            animation: opacity 1s infinite 0.2s;
-        }
-
-        @keyframes opacity {
-            0% { opacity: 1; }
-            50% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-
-        @keyframes colorize {
-            0% { background: var(--color-background); }
-            50% { background: var(--color-background-hover); }
-            100% { background: var(--color-background); }
-        }
-
-        @keyframes ripple {
-            0% { outline: 0em solid transparent; outline-offset: -0.1em; }
-            50% { outline: 0.2em solid var(--color-outline); outline-offset: 0.2em; }
-            100% { outline: 0.4em solid transparent; outline-offset: 0.4em; }
-        }
-
-        /* --- 'Learn More' Button Effect --- */
+        /* 6 — Learn-more pill-expand button */
         .learn-more {
             position: relative;
             display: inline-block;
-            cursor: pointer;
+            cursor: none;
             outline: none;
             border: 0;
             vertical-align: middle;
@@ -440,7 +546,7 @@
             margin: 0;
             width: 3rem;
             height: 3rem;
-            background: #B30000;
+            background: var(--accent-dark);
             border-radius: 1.625rem;
         }
 
@@ -454,11 +560,11 @@
         }
 
         .learn-more .circle .icon.arrow {
-            transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
             left: 0.625rem;
             width: 1.125rem;
             height: 0.125rem;
             background: none;
+            transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
         }
 
         .learn-more .circle .icon.arrow::before {
@@ -482,11 +588,13 @@
             bottom: 0;
             padding: 0.75rem 0;
             margin: 0 0 0 1.85rem;
-            color: #ffffff;
+            color: #fff;
             font-weight: 700;
             line-height: 1.6;
             text-align: center;
             text-transform: uppercase;
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: 0.12em;
         }
 
         .learn-more:hover .circle {
@@ -498,316 +606,809 @@
             transform: translate(1rem, 0);
         }
 
-        .learn-more:hover .button-text {
-            color: #fff;
+        /* ══════════════════════════════════════
+           NAV STAT PILL
+        ══════════════════════════════════════ */
+        .nav-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: var(--accent-dim);
+            border: 1px solid var(--border-red);
+            border-radius: 20px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: #FF4D4D;
+        }
+
+        .nav-stat .dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.25;
+            }
+        }
+
+        /* ══════════════════════════════════════
+           PROFILE DROPDOWN
+        ══════════════════════════════════════ */
+        .dropdown-glass {
+            background: rgba(10, 10, 10, 0.96);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 45, 45, 0.04);
+        }
+
+        /* ══════════════════════════════════════
+           ANIMATIONS
+        ══════════════════════════════════════ */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleUp {
+            from {
+                opacity: 0;
+                transform: scale(0.93) translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes ping {
+
+            75%,
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .animate-scale-in {
+            animation: scaleUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .animate-ping {
+            animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        .page-transition {
+            opacity: 0;
+        }
+
+        /* ══════════════════════════════════════
+           SPLASH
+        ══════════════════════════════════════ */
+        .splash-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            gap: 36px;
+        }
+
+        .site-content-wrapper {
+            opacity: 0;
+            transition: opacity 0.85s ease;
+        }
+
+        .site-content-wrapper.visible {
+            opacity: 1;
+        }
+
+        /* ══════════════════════════════════════
+           MOBILE MENU
+        ══════════════════════════════════════ */
+        #mobile-menu {
+            background: rgba(4, 4, 4, 0.97);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+        }
+
+        /* ══════════════════════════════════════
+           CHAT
+        ══════════════════════════════════════ */
+        .chat-bubble-btn {
+            background: linear-gradient(135deg, var(--accent) 0%, #7a0000 100%);
+            box-shadow: 0 8px 28px var(--accent-glow);
+            transition: transform 0.25s, box-shadow 0.25s;
+        }
+
+        .chat-bubble-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 36px rgba(255, 45, 45, 0.45);
+        }
+
+        .chat-panel-glass {
+            background: rgba(7, 7, 7, 0.97);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 45, 45, 0.05);
+        }
+
+        /* ══════════════════════════════════════
+           FORM ELEMENTS
+        ══════════════════════════════════════ */
+        select,
+        select option {
+            background-color: var(--bg-secondary) !important;
+            color: #fff !important;
+        }
+
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1.5rem center;
+            background-size: 1rem;
+            padding-right: 3rem;
+        }
+
+        select,
+        input#year-input,
+        #driving-condition,
+        #mileage-range,
+        #preferred-frequency {
+            box-shadow: inset 4px 4px 8px #020202, inset -4px -4px 8px #0f0f0f !important;
+            border: 1px solid rgba(255, 255, 255, 0.03) !important;
+        }
+
+        /* ══════════════════════════════════════
+           UTILITIES
+        ══════════════════════════════════════ */
+        .red-rule {
+            display: inline-block;
+            width: 28px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px;
+            vertical-align: middle;
+        }
+
+        a,
+        button {
+            cursor: none;
         }
     </style>
 </head>
 
 <body class="min-h-screen flex flex-col">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 glass border-b border-white/5">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="{% url 'home' %}" class="group flex items-center gap-3">
-                <div class="relative">
-                    <i class="fas fa-oil-can text-3xl text-red-500 group-hover:rotate-12 transition-transform"></i>
-                    <div
-                        class="absolute -inset-2 bg-red-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity">
-                    </div>
-                </div>
-                <span class="text-2xl font-black uppercase tracking-tighter">Oil<span
-                        class="text-red-500">Rec</span></span>
-            </a>
 
-            <div class="flex items-center gap-4">
+    <!-- Custom Cursor -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-ring"></div>
+
+    <!-- ══════════════════════════════════════
+         SPLASH SCREEN
+    ══════════════════════════════════════ -->
+    {% block splash_screen %}
+    <div id="splash-screen" class="splash-overlay">
+        <script>
+            (function () {
+                const t = performance.getEntriesByType('navigation')[0]?.type;
+                if (t === 'navigate' && sessionStorage.getItem('oilrec_splash_seen')) {
+                    document.getElementById('splash-screen').style.display = 'none';
+                }
+            })();
+        </script>
+
+        <!-- Logo -->
+        <div id="splash-logo"
+            style="opacity:0;transform:translateY(22px);transition:all 0.85s cubic-bezier(0.22,1,0.36,1);text-align:center;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px;">
                 <div
-                    class="hidden md:flex items-center space-x-8 text-xs font-bold uppercase tracking-widest text-gray-400">
-                    <a href="{% url 'home' %}" class="btn-shine">Home</a>
-                    <a href="{% url 'garage' %}" class="btn-shine">Garage</a>
-                    <a href="{% url 'recommendation_page' %}" class="btn-shine">Recommender</a>
-                    <a href="{% url 'shop_page' %}" class="btn-shine">Shop</a>
-                    <a href="{% url 'academy' %}" class="btn-shine">Academy</a>
+                    style="width:52px;height:52px;background:linear-gradient(135deg,#FF2D2D,#7a0000);border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(255,45,45,0.35);">
+                    <i class="fas fa-oil-can" style="font-size:22px;color:#fff;"></i>
+                </div>
+                <span
+                    style="font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:900;font-style:italic;letter-spacing:-0.02em;color:#fff;text-transform:uppercase;">Oil<span
+                        style="color:#FF2D2D;">Rec</span></span>
+            </div>
+            <p
+                style="font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:0.4em;color:#333;text-transform:uppercase;margin-top:4px;">
+                Precision Engine Care</p>
+        </div>
 
-                    <!-- Theme Toggle -->
-                    <button onclick="toggleTheme()" class="w-8 h-8 rounded-lg glass hover:bg-white/10 flex items-center justify-center transition-all group overflow-hidden border border-white/10" title="Toggle Theme">
-                        <i class="fas fa-sun text-yellow-400 theme-icon-sun transition-all duration-500 text-xs"></i>
-                        <i class="fas fa-moon text-blue-400 theme-icon-moon hidden transition-all duration-500 text-xs"></i>
-                    </button>
+        <!-- RPM Gauge -->
+        <div style="position:relative;display:flex;align-items:center;justify-content:center;">
+            <canvas id="rpm-gauge" width="230" height="230"></canvas>
+            <div style="position:absolute;bottom:34px;text-align:center;pointer-events:none;">
+                <div id="rpm-number"
+                    style="font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:900;color:#fff;line-height:1;font-variant-numeric:tabular-nums;">
+                    0</div>
+                <div
+                    style="font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:0.32em;color:#3a3a3a;margin-top:3px;text-transform:uppercase;">
+                    RPM ×1000</div>
+            </div>
+        </div>
 
+        <!-- Status -->
+        <div id="splash-status"
+            style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:0.42em;color:#FF2D2D;text-transform:uppercase;min-height:16px;">
+            Initializing</div>
+
+        <!-- Progress bar -->
+        <div style="width:200px;height:2px;background:#111;border-radius:2px;overflow:hidden;">
+            <div id="splash-bar"
+                style="height:100%;width:0%;background:linear-gradient(90deg,#7a0000,#FF2D2D);border-radius:2px;"></div>
+        </div>
+    </div>
+    {% endblock %}
+
+    <!-- ══════════════════════════════════════
+         SITE WRAPPER
+    ══════════════════════════════════════ -->
+    <div id="site-wrapper"
+        class="{% block site_wrapper_class %}site-content-wrapper{% endblock %} min-h-screen flex flex-col">
+
+        <!-- NAVIGATION -->
+        <nav class="fixed top-0 w-full z-50 glass">
+            <div class="max-w-7xl mx-auto px-6 h-[68px] flex items-center justify-between gap-6">
+
+                <!-- Logo -->
+                <a href="{% url 'home' %}" class="flex items-center gap-3 group flex-shrink-0">
+                    <div class="relative w-9 h-9 rounded-lg flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:shadow-[0_0_18px_rgba(255,45,45,0.5)]"
+                        style="background:linear-gradient(135deg,#FF2D2D,#7a0000);">
+                        <i class="fas fa-oil-can text-sm text-white relative z-10"></i>
+                    </div>
+                    <span class="logo-text">Oil<span class="text-red-500">Rec</span></span>
+                </a>
+
+                <!-- Center nav -->
+                <div class="hidden lg:flex items-center gap-7 nav-group">
+                    <a href="{% url 'home' %}" class="nav-link">Home</a>
+                    <a href="{% url 'garage' %}" class="nav-link">Garage</a>
+                    <a href="{% url 'recommendation_page' %}" class="nav-link">Recommender</a>
+                    <a href="{% url 'shop_page' %}" class="nav-link">Shop</a>
+                    <a href="{% url 'service_locator' %}" class="nav-link">Locator</a>
+                    <a href="{% url 'academy' %}" class="nav-link">Academy</a>
+                </div>
+
+                <!-- Right side -->
+                <div class="flex items-center gap-3 flex-shrink-0">
                     {% if user.is_authenticated %}
-                    <!-- Cart Icon -->
-                    <a href="{% url 'cart_view' %}" class="relative group p-2 hover:text-white transition">
-                        <i class="fas fa-shopping-cart text-lg"></i>
-                        <span id="cart-count"
-                            class="absolute -top-1 -right-1 bg-red-500 text-[8px] text-white w-4 h-4 rounded-full flex items-center justify-center font-black">
+
+                    <!-- Active pill -->
+                    <div class="hidden xl:flex nav-stat">
+                        <span class="dot"></span>
+                        Engine Active
+                    </div>
+
+                    <!-- Cart -->
+                    <a href="{% url 'cart_view' %}"
+                        class="relative p-2 text-gray-600 hover:text-white transition-colors duration-200">
+                        <i class="fas fa-shopping-cart text-base"></i>
+                        <span
+                            class="absolute -top-0.5 -right-0.5 bg-red-500 text-[8px] text-white w-4 h-4 rounded-full flex items-center justify-center font-black leading-none">
                             {{ user.cart_items.count|default:0 }}
                         </span>
+                        <span
+                            class="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red-500 animate-ping opacity-35 pointer-events-none"></span>
                     </a>
 
-                    <!-- Profile Dropdown -->
-                    <div class="relative ml-4">
+                    <!-- Profile button + dropdown -->
+                    <div class="relative">
                         <button onclick="toggleProfileDropdown()"
-                            class="flex items-center gap-3 group focus:outline-none">
-                            <div
-                                class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-800 flex items-center justify-center text-white border-2 border-white/10 group-hover:border-red-500 transition-all shadow-lg overflow-hidden">
-                                <i class="fas fa-user text-sm"></i>
+                            class="flex items-center gap-2 group focus:outline-none">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center border border-white/10 group-hover:border-red-500/40 transition-all shadow-lg overflow-hidden"
+                                style="background:linear-gradient(135deg,#b91c1c,#7f1d1d);">
+                                <i class="fas fa-user text-xs text-white"></i>
                             </div>
+                            <i
+                                class="fas fa-chevron-down text-[8px] text-gray-600 group-hover:text-gray-300 transition-colors hidden md:block"></i>
                         </button>
 
                         <div id="profile-dropdown"
-                            class="hidden absolute right-0 mt-4 w-72 glass-premium rounded-3xl p-6 shadow-2xl border border-white/10 animate-scale-in">
-                            <div class="space-y-4">
-                                <div class="pb-4 border-b border-white/5">
-                                    <p class="text-[10px] text-red-500 font-black uppercase tracking-[0.2em] mb-1">
-                                        MEMBER
-                                        PROFILE</p>
-                                    <p class="text-white text-lg font-black truncate leading-tight">
-                                        {% if user.first_name %}
-                                        {{ user.first_name }} {{ user.last_name }}
-                                        {% else %}
-                                        {{ user.username|capfirst }}
-                                        {% endif %}
+                            class="hidden absolute right-0 mt-3 w-[280px] dropdown-glass p-5 animate-scale-in">
+                            <!-- Header -->
+                            <div class="flex items-center gap-3 pb-4 mb-4 border-b border-white/5">
+                                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                                    style="background:linear-gradient(135deg,#b91c1c,#7f1d1d);">
+                                    <i class="fas fa-user text-xs text-white"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-white text-sm font-bold truncate leading-tight">
+                                        {% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{
+                                        user.username|capfirst }}{% endif %}
                                     </p>
-                                    <p class="text-[10px] text-gray-500 mt-1 lowercase truncate">{{ user.email }}</p>
+                                    <p class="text-[10px] text-gray-600 truncate mt-0.5">{{ user.email }}</p>
                                     {% if user.profile.tagline %}
-                                    <p class="text-[9px] text-red-500 font-bold mt-1 uppercase tracking-widest">{{ user.profile.tagline }}</p>
-                                    {% endif %}
-                                    {% if user.profile.phone_number %}
-                                    <p class="text-[9px] text-red-500/80 font-bold mt-1">{{ user.profile.phone_number }}
-                                    </p>
+                                    <p
+                                        class="text-[9px] text-red-500 font-bold mt-1 uppercase tracking-widest truncate">
+                                        {{ user.profile.tagline }}</p>
                                     {% endif %}
                                 </div>
-
-                                <div class="flex flex-col gap-2">
-                                    <a href="{% url 'garage' %}"
-                                        class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition text-gray-400 hover:text-white">
-                                        <i class="fas fa-warehouse text-xs"></i>
-                                        <span>My Garage</span>
-                                    </a>
-                                    <a href="{% url 'profile_page' %}"
-                                        class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition text-gray-400 hover:text-white">
-                                        <i class="fas fa-history text-xs"></i>
-                                        <span>Purchase History</span>
-                                    </a>
-                                </div>
-
-                                <div class="pt-4 border-t border-white/5">
-                                    <form method="post" action="{% url 'account_logout' %}" class="w-full">
-                                        {% csrf_token %}
-                                        <button type="submit"
-                                            class="w-full flex items-center justify-center gap-3 p-3 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white transition font-black">
-                                            <i class="fas fa-sign-out-alt text-xs"></i>
-                                            <span>Sign Out</span>
-                                        </button>
-                                    </form>
-                                </div>
+                                <span
+                                    class="flex-shrink-0 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border"
+                                    style="background:rgba(255,45,45,0.08);color:#FF4D4D;border-color:rgba(255,45,45,0.2);">Pro</span>
                             </div>
+
+                            <!-- Links -->
+                            <div class="space-y-0.5 mb-4">
+                                <a href="{% url 'garage' %}"
+                                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-gray-500 hover:text-white transition-all text-sm">
+                                    <i class="fas fa-warehouse text-xs w-4 text-center opacity-60"></i> My Garage
+                                </a>
+                                <a href="{% url 'profile_page' %}"
+                                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-gray-500 hover:text-white transition-all text-sm">
+                                    <i class="fas fa-history text-xs w-4 text-center opacity-60"></i> Purchase History
+                                </a>
+                                <a href="{% url 'cart_view' %}"
+                                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-gray-500 hover:text-white transition-all text-sm">
+                                    <i class="fas fa-shopping-bag text-xs w-4 text-center opacity-60"></i> My Cart
+                                </a>
+                                {% if user.profile.phone_number %}
+                                <div class="flex items-center gap-3 px-3 py-2 text-gray-700 text-xs">
+                                    <i class="fas fa-phone text-xs w-4 text-center opacity-40"></i> {{
+                                    user.profile.phone_number }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Sign out -->
+                            <form method="post" action="{% url 'account_logout' %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold border transition-all"
+                                    style="background:rgba(255,45,45,0.08);color:#FF4D4D;border-color:rgba(255,45,45,0.18);"
+                                    onmouseover="this.style.background='#FF2D2D';this.style.color='#fff';this.style.borderColor='#FF2D2D';"
+                                    onmouseout="this.style.background='rgba(255,45,45,0.08)';this.style.color='#FF4D4D';this.style.borderColor='rgba(255,45,45,0.18)';">
+                                    <i class="fas fa-sign-out-alt text-xs"></i> Sign Out
+                                </button>
+                            </form>
                         </div>
                     </div>
+
                     {% else %}
+                    <!-- Get Started — cssbuttons style -->
                     <a href="{% url 'account_signup' %}" class="cssbuttons-io-button">
                         Get Started
                         <div class="icon">
-                            <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <svg height="20" width="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                                <path
+                                    d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
                                     fill="currentColor"></path>
                             </svg>
                         </div>
                     </a>
                     {% endif %}
+
+                    <!-- Mobile hamburger -->
+                    <button class="lg:hidden flex flex-col gap-[5px] p-2 ml-1" onclick="toggleMenu()" aria-label="Menu">
+                        <span class="w-5 h-[1.5px] bg-white block rounded"></span>
+                        <span class="w-3.5 h-[1.5px] bg-red-500 block rounded"></span>
+                        <span class="w-5 h-[1.5px] bg-white block rounded"></span>
+                    </button>
                 </div>
-
-
-
-                <!-- Mobile Menu Toggle -->
-                <button class="md:hidden text-white" onclick="toggleMenu()">
-                    <i class="fas fa-bars text-2xl"></i>
-                </button>
             </div>
-        </div>
-    </nav>
+        </nav>
 
-    <script>
-        function toggleProfileDropdown() {
-            const dropdown = document.getElementById('profile-dropdown');
-            dropdown.classList.toggle('hidden');
-        }
-
-        // Close dropdown when clicking outside
-        window.addEventListener('click', function (e) {
-            const dropdown = document.getElementById('profile-dropdown');
-            const btn = dropdown?.previousElementSibling;
-            if (dropdown && !dropdown.contains(e.target) && !btn.contains(e.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-    </script>
-
-    <!-- Mobile Fullscreen Menu -->
-    <div id="mobile-menu"
-        class="fixed inset-0 z-[60] glass hidden items-center justify-center animate-in fade-in duration-300">
-        <button class="absolute top-6 right-6 text-3xl" onclick="toggleMenu()">
-            <i class="fas fa-times"></i>
-        </button>
-        <div class="flex flex-col items-center space-y-8 text-2xl font-black uppercase tracking-widest">
-            <a href="{% url 'home' %}" onclick="toggleMenu()">Home</a>
-            <a href="{% url 'garage' %}" onclick="toggleMenu()">My Garage</a>
-            <a href="{% url 'recommendation_page' %}" onclick="toggleMenu()">Recommender</a>
-            <a href="{% url 'academy' %}" onclick="toggleMenu()">Academy</a>
-            <a href="{% url 'shop_page' %}" onclick="toggleMenu()">Shop</a>
-
+        <!-- MOBILE FULLSCREEN MENU -->
+        <div id="mobile-menu" class="fixed inset-0 z-[60] hidden flex-col items-center justify-center gap-8">
+            <button class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
+                onclick="toggleMenu()">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style="background:linear-gradient(135deg,#FF2D2D,#7a0000);">
+                    <i class="fas fa-oil-can text-xs text-white"></i>
+                </div>
+                <span class="logo-text text-2xl">Oil<span class="text-red-500">Rec</span></span>
+            </div>
+            <div class="flex flex-col items-center gap-5">
+                <a href="{% url 'home' %}" onclick="toggleMenu()" class="nav-link text-lg" style="color:#fff;">Home</a>
+                <a href="{% url 'garage' %}" onclick="toggleMenu()" class="nav-link text-lg">My Garage</a>
+                <a href="{% url 'recommendation_page' %}" onclick="toggleMenu()"
+                    class="nav-link text-lg">Recommender</a>
+                <a href="{% url 'service_locator' %}" onclick="toggleMenu()" class="nav-link text-lg">Locator</a>
+                <a href="{% url 'academy' %}" onclick="toggleMenu()" class="nav-link text-lg">Academy</a>
+                <a href="{% url 'shop_page' %}" onclick="toggleMenu()" class="nav-link text-lg">Shop</a>
+            </div>
             {% if user.is_authenticated %}
             <form method="post" action="{% url 'account_logout' %}">
                 {% csrf_token %}
-                <button type="submit" class="text-red-500">Sign Out</button>
+                <button type="submit" class="btn-ghost mt-6">Sign Out</button>
             </form>
             {% else %}
-            <a href="{% url 'account_signup' %}" class="cssbuttons-io-button" onclick="toggleMenu()">
-                Get Started
-                <div class="icon">
-                    <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M0 0h24v24H0z" fill="none"></path>
-                        <path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
-                            fill="currentColor"></path>
-                    </svg>
-                </div>
+            <a href="{% url 'account_signup' %}" class="btn-ignite mt-6" onclick="toggleMenu()">
+                Get Started <span class="icon-circle"><i class="fas fa-arrow-right"></i></span>
             </a>
             {% endif %}
         </div>
-    </div>
 
-    <script>
-        function toggleMenu() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
-            menu.classList.toggle('flex');
-            document.body.classList.toggle('overflow-hidden');
-        }
-    </script>
+        <!-- MAIN CONTENT -->
+        <main class="flex-grow pt-[68px] page-transition animate-fade-in">
+            {% block content %}{% endblock %}
+        </main>
 
-    <main class="flex-grow pt-20 page-transition animate-fade-in">
-        {% block content %}{% endblock %}
-    </main>
+        <!-- FOOTER -->
+        <footer class="border-t border-white/5 py-16 px-6 mt-24">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
 
-    <!-- Footer -->
-    <footer class="border-t border-white/5 py-12 px-6 mt-20">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
-            <div class="space-y-4">
-                <div class="flex items-center space-x-2">
-                    <span class="text-xl font-bold">OIL<span class="text-red-500">REC</span></span>
-                </div>
-                <p class="text-gray-500">Empowering vehicle owners with data-driven lubrication expertise.</p>
-            </div>
-            <!-- More footer columns... -->
-        </div>
-    </footer>
-
-    {% block extra_js %}{% endblock %}
-    <!-- GlideAdvisor Floating UI -->
-    <div id="glide-advisor-container" class="fixed bottom-6 right-6 z-[100] font-sans">
-        <!-- Chat Bubble -->
-        <button id="chat-bubble" onclick="toggleChat()"
-            class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-red-500/40 hover:scale-110 active:scale-95 transition-all duration-300 group">
-            <i class="fas fa-robot text-2xl group-hover:hidden"></i>
-            <i class="fas fa-times text-2xl hidden group-hover:block" id="close-icon"></i>
-            <span class="absolute -top-1 -right-1 flex h-4 w-4">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-4 w-4 bg-red-600 border-2 border-white/20"></span>
-            </span>
-        </button>
-
-        <!-- Chat Panel -->
-        <div id="chat-panel"
-            class="hidden absolute bottom-24 right-0 w-[350px] md:w-[420px] h-[550px] bg-[#0F0F0F]/95 backdrop-blur-2xl rounded-[3rem] border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-500 scale-95 origin-bottom-right">
-            <!-- Header -->
-            <div
-                class="p-8 border-b border-white/5 bg-gradient-to-r from-red-500/10 to-transparent flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div
-                        class="w-12 h-12 bg-red-500 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg shadow-red-500/20">
-                        <i class="fas fa-robot"></i>
+                    <!-- Brand -->
+                    <div class="md:col-span-1 space-y-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                style="background:linear-gradient(135deg,#FF2D2D,#7a0000);">
+                                <i class="fas fa-oil-can text-xs text-white"></i>
+                            </div>
+                            <span class="logo-text text-xl">Oil<span class="text-red-500">Rec</span></span>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed">Precision lubrication intelligence for every
+                            engine. Data-driven expertise, zero guesswork.</p>
+                        <div class="flex gap-3">
+                            <a href="#"
+                                class="w-8 h-8 border border-white/8 rounded-lg flex items-center justify-center text-gray-600 hover:text-white hover:border-white/25 transition-all text-xs"><i
+                                    class="fab fa-twitter"></i></a>
+                            <a href="#"
+                                class="w-8 h-8 border border-white/8 rounded-lg flex items-center justify-center text-gray-600 hover:text-white hover:border-white/25 transition-all text-xs"><i
+                                    class="fab fa-instagram"></i></a>
+                            <a href="#"
+                                class="w-8 h-8 border border-white/8 rounded-lg flex items-center justify-center text-gray-600 hover:text-white hover:border-white/25 transition-all text-xs"><i
+                                    class="fab fa-youtube"></i></a>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-xs font-black uppercase tracking-[0.2em] text-white">Elara</h3>
-                        <p class="text-[9px] text-red-500 font-black uppercase tracking-widest mt-0.5">Automotive AI</p>
-                    </div>
-                </div>
-                <button onclick="toggleChat()" class="text-white/20 hover:text-white transition-colors">
-                    <i class="fas fa-minus text-xs"></i>
-                </button>
-            </div>
 
-            <!-- Messages Area -->
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-hide py-10">
-                <div class="flex gap-4">
-                    <div
-                        class="w-8 h-8 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0 text-red-500 text-[10px] mt-1 shadow-sm">
-                        <i class="fas fa-robot"></i>
+                    <!-- Platform -->
+                    <div class="space-y-4">
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-red-500">Platform</p>
+                        <div class="space-y-3">
+                            <a href="{% url 'home' %}"
+                                class="block text-sm text-gray-600 hover:text-white transition-colors">Home</a>
+                            <a href="{% url 'garage' %}"
+                                class="block text-sm text-gray-600 hover:text-white transition-colors">My Garage</a>
+                            <a href="{% url 'recommendation_page' %}"
+                                class="block text-sm text-gray-600 hover:text-white transition-colors">Recommender</a>
+                        </div>
                     </div>
-                    <div
-                        class="bg-white/[0.03] p-5 rounded-3xl rounded-tl-none border border-white/5 max-w-[85%] shadow-sm">
-                        <p class="text-[11px] text-white/70 leading-relaxed font-semibold">
-                            Greetings! I am <span class="text-white font-black">Elara</span>, your premium
-                            lubrication expert. How can I assist you with your engine's health today?
-                        </p>
+
+                    <!-- Learn -->
+                    <div class="space-y-4">
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-red-500">Learn</p>
+                        <div class="space-y-3">
+                            <a href="{% url 'academy' %}"
+                                class="block text-sm text-gray-600 hover:text-white transition-colors">Academy</a>
+                            <a href="{% url 'shop_page' %}"
+                                class="block text-sm text-gray-600 hover:text-white transition-colors">Shop</a>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="space-y-4">
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-red-500">Engine Stats</p>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2.5 text-sm text-gray-600"><span
+                                    class="red-rule"></span>99.4% Platform Uptime</div>
+                            <div class="flex items-center gap-2.5 text-sm text-gray-600"><span
+                                    class="red-rule"></span>12,000+ Vehicles Tracked</div>
+                            <div class="flex items-center gap-2.5 text-sm text-gray-600"><span
+                                    class="red-rule"></span>50+ Premium Oil Brands</div>
+                            <div class="flex items-center gap-2.5 text-sm text-gray-600"><span
+                                    class="red-rule"></span>AI-Powered Recommendations</div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Input Area -->
-            <div class="p-8 border-t border-white/5 bg-white/[0.02]">
-                <form id="chat-form" onsubmit="handleChatSubmit(event)" class="relative">
-                    <input type="text" id="chat-input"
-                        class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-[11px] text-white placeholder-white/20 focus:outline-none focus:border-red-500/50 transition-all pr-14 font-semibold shadow-inner"
-                        placeholder="Type your technical query...">
-                    <button type="submit"
-                        class="absolute right-2 top-2 w-10 h-10 bg-red-500 rounded-xl text-white flex items-center justify-center hover:bg-red-600 active:scale-95 transition-all shadow-lg shadow-red-500/20">
-                        <i class="fas fa-paper-plane text-[10px]"></i>
+                <div class="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p class="text-gray-700 text-xs">© 2024 OilRec. All rights reserved.</p>
+                    <p class="text-gray-700 text-xs">Built for engine perfectionists.</p>
+                </div>
+            </div>
+        </footer>
+
+        {% block extra_js %}{% endblock %}
+
+        <!-- GLIDE ADVISOR CHAT -->
+        <div id="glide-advisor-container" class="fixed bottom-6 right-6 z-[100]">
+            <button id="chat-bubble" onclick="toggleChat()"
+                class="chat-bubble-btn w-14 h-14 rounded-full flex items-center justify-center text-white relative active:scale-95">
+                <i class="fas fa-robot text-xl" id="chat-icon"></i>
+                <i class="fas fa-times text-xl hidden" id="close-icon"></i>
+                <span class="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-55"></span>
+                    <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-600 border-2 border-black"></span>
+                </span>
+            </button>
+
+            <div id="chat-panel"
+                class="hidden absolute bottom-[72px] right-0 w-[360px] md:w-[400px] h-[520px] chat-panel-glass rounded-[24px] flex-col overflow-hidden animate-scale-in">
+                <!-- Header -->
+                <div class="px-6 py-5 border-b border-white/5 flex items-center justify-between flex-shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg"
+                            style="background:linear-gradient(135deg,#FF2D2D,#7a0000);box-shadow:0 4px 16px rgba(255,45,45,0.2);">
+                            <i class="fas fa-robot text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-white text-sm font-bold"
+                                style="font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em;">Elara</p>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-400"
+                                    style="animation:blink 2s infinite;"></span>
+                                <span
+                                    class="text-[9px] text-green-400 font-bold uppercase tracking-widest">Online</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="toggleChat()"
+                        class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-500 hover:text-white transition-all text-xs">
+                        <i class="fas fa-minus"></i>
                     </button>
-                </form>
+                </div>
+
+                <!-- Messages -->
+                <div id="chat-messages" class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+                    <div class="flex gap-3">
+                        <div class="w-7 h-7 rounded-lg border flex items-center justify-center flex-shrink-0 text-red-500 text-[10px] mt-1"
+                            style="background:rgba(255,45,45,0.08);border-color:rgba(255,45,45,0.18);">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div
+                            class="bg-white/[0.04] px-4 py-3 rounded-2xl rounded-tl-none border border-white/5 max-w-[85%]">
+                            <p class="text-[11px] text-gray-300 leading-relaxed">
+                                Hey! I'm <span class="text-white font-bold">Elara</span> — your AI lubrication expert.
+                                What engine questions do you have?
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input -->
+                <div class="px-5 py-4 border-t border-white/5 flex-shrink-0">
+                    <form id="chat-form" onsubmit="handleChatSubmit(event)" class="relative">
+                        <input type="text" id="chat-input"
+                            class="w-full rounded-xl px-4 py-3 text-xs text-white placeholder-gray-600 focus:outline-none transition-all pr-12"
+                            style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);"
+                            placeholder="Ask about engine oils..."
+                            onfocus="this.style.borderColor='rgba(255,45,45,0.35)'"
+                            onblur="this.style.borderColor='rgba(255,255,255,0.06)'">
+                        <button type="submit"
+                            class="absolute right-2 top-2 w-8 h-8 rounded-lg text-white flex items-center justify-center transition-all text-[10px]"
+                            style="background:#FF2D2D;" onmouseover="this.style.background='#c41414';"
+                            onmouseout="this.style.background='#FF2D2D';">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
+
+    </div><!-- /site-wrapper -->
 
     <script src="{% static 'js/glide_advisor.js' %}"></script>
+
     <script>
-        // --- Theme Management ---
-        function toggleTheme() {
-            const html = document.documentElement;
-            const isLight = html.classList.toggle('light');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            updateThemeIcons(isLight);
-        }
-
-        function updateThemeIcons(isLight) {
-            const sun = document.querySelector('.theme-icon-sun');
-            const moon = document.querySelector('.theme-icon-moon');
-            if (isLight) {
-                sun?.classList.add('hidden');
-                moon?.classList.remove('hidden');
-            } else {
-                sun?.classList.remove('hidden');
-                moon?.classList.add('hidden');
-            }
-        }
-
-        // Initialize theme
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            const isLight = savedTheme === 'light';
-            if (isLight) {
-                document.documentElement.classList.add('light');
-                updateThemeIcons(true);
-            }
+        /* ── Custom Cursor ── */
+        const _dot = document.getElementById('cursor-dot');
+        const _ring = document.getElementById('cursor-ring');
+        let _mx = 0, _my = 0, _rx = 0, _ry = 0;
+        document.addEventListener('mousemove', e => { _mx = e.clientX; _my = e.clientY; });
+        (function cursorLoop() {
+            _rx += (_mx - _rx) * 0.13; _ry += (_my - _ry) * 0.13;
+            _dot.style.left = _mx + 'px'; _dot.style.top = _my + 'px';
+            _ring.style.left = _rx + 'px'; _ring.style.top = _ry + 'px';
+            requestAnimationFrame(cursorLoop);
         })();
+        document.querySelectorAll('a,button').forEach(el => {
+            el.addEventListener('mouseenter', () => { _dot.style.transform = 'translate(-50%,-50%) scale(2.2)'; });
+            el.addEventListener('mouseleave', () => { _dot.style.transform = 'translate(-50%,-50%) scale(1)'; });
+        });
 
-        // --- PWA Registration ---
+        /* ── Profile dropdown ── */
+        function toggleProfileDropdown() {
+            document.getElementById('profile-dropdown').classList.toggle('hidden');
+        }
+        window.addEventListener('click', e => {
+            const d = document.getElementById('profile-dropdown');
+            if (d && !d.contains(e.target) && !d.previousElementSibling?.contains(e.target))
+                d.classList.add('hidden');
+        });
+
+        /* ── Mobile menu ── */
+        function toggleMenu() {
+            const m = document.getElementById('mobile-menu');
+            m.classList.toggle('hidden'); m.classList.toggle('flex');
+            document.body.classList.toggle('overflow-hidden');
+        }
+
+        /* ── Chat ── */
+        function toggleChat() {
+            const p = document.getElementById('chat-panel');
+            const i = document.getElementById('chat-icon');
+            const x = document.getElementById('close-icon');
+            const isOpen = !p.classList.contains('hidden');
+            if (isOpen) { p.classList.add('hidden'); p.classList.remove('flex'); }
+            else { p.classList.remove('hidden'); p.classList.add('flex'); }
+            i.classList.toggle('hidden'); x.classList.toggle('hidden');
+        }
+
+        /* ── Active nav link ── */
+        document.querySelectorAll('.nav-link').forEach(link => {
+            if (link.href === window.location.href) link.classList.add('active');
+        });
+    </script>
+
+    <!-- ── SPLASH LOGIC ── -->
+    {% block splash_script %}
+    <script>
+        function startSplashSequence() {
+            const splash = document.getElementById('splash-screen');
+            const wrapper = document.getElementById('site-wrapper');
+            if (!splash) return;
+
+            const navType = performance.getEntriesByType('navigation')[0]?.type;
+            const seen = sessionStorage.getItem('oilrec_splash_seen');
+
+            if (navType === 'navigate' && seen) {
+                splash.style.display = 'none';
+                if (wrapper) { wrapper.classList.remove('site-content-wrapper'); wrapper.classList.add('visible'); }
+                return;
+            }
+            _runSplash();
+        }
+
+        function _runSplash() {
+            const canvas = document.getElementById('rpm-gauge');
+            if (!canvas) return;
+            sessionStorage.setItem('oilrec_splash_seen', 'true');
+
+            const ctx = canvas.getContext('2d');
+            const rpmEl = document.getElementById('rpm-number');
+            const statusEl = document.getElementById('splash-status');
+            const logoEl = document.getElementById('splash-logo');
+            const barEl = document.getElementById('splash-bar');
+
+            const MAX = 8000, DUR = 3000;
+            let t0 = null;
+
+            const stages = [
+                { rpm: 0, txt: 'Initializing' },
+                { rpm: 2000, txt: 'Loading Systems' },
+                { rpm: 4500, txt: 'Warming Engine' },
+                { rpm: 7000, txt: 'Launching' }
+            ];
+
+            /* Show logo */
+            setTimeout(() => { logoEl.style.opacity = '1'; logoEl.style.transform = 'translateY(0)'; }, 160);
+
+            function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+
+            function drawGauge(rpm) {
+                const W = canvas.width, H = canvas.height;
+                const cx = W / 2, cy = H / 2 + 22, R = 90;
+                const sa = 0.75 * Math.PI, ea = 2.25 * Math.PI, span = ea - sa;
+                ctx.clearRect(0, 0, W, H);
+
+                /* background ring segments */
+                for (let i = 0; i < 40; i++) {
+                    const a = sa + (i / 40) * span;
+                    const a2 = sa + ((i + 0.75) / 40) * span;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, R, a, a2);
+                    ctx.strokeStyle = '#181818'; ctx.lineWidth = 14; ctx.lineCap = 'butt';
+                    ctx.stroke();
+                }
+
+                /* filled arc gradient */
+                const ca = sa + (rpm / MAX) * span;
+                const g = ctx.createLinearGradient(cx - R, cy, cx + R, cy);
+                g.addColorStop(0, '#5a0000'); g.addColorStop(1, '#FF2D2D');
+                ctx.beginPath();
+                ctx.arc(cx, cy, R, sa, ca);
+                ctx.strokeStyle = g; ctx.lineWidth = 14; ctx.lineCap = 'round';
+                ctx.stroke();
+
+                /* tick marks */
+                for (let i = 0; i <= 8; i++) {
+                    const a = sa + (i / 8) * span;
+                    const major = i % 2 === 0;
+                    const r1 = R + 15, r2 = R + 15 + (major ? 11 : 6);
+                    ctx.beginPath();
+                    ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+                    ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
+                    ctx.strokeStyle = i === 8 ? '#FF2D2D' : (major ? '#383838' : '#222');
+                    ctx.lineWidth = major ? 2.5 : 1; ctx.lineCap = 'round';
+                    ctx.stroke();
+                }
+
+                /* needle */
+                ctx.save(); ctx.translate(cx, cy); ctx.rotate(ca);
+                ctx.beginPath();
+                ctx.moveTo(0, 3.5); ctx.lineTo(R - 20, 0); ctx.lineTo(0, -3.5);
+                ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.fill();
+                ctx.restore();
+
+                /* center cap */
+                ctx.beginPath(); ctx.arc(cx, cy, 9, 0, Math.PI * 2);
+                ctx.fillStyle = '#FF2D2D'; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff'; ctx.fill();
+            }
+
+            function frame(ts) {
+                if (!t0) t0 = ts;
+                const p = Math.min((ts - t0) / DUR, 1);
+                const ep = ease(p);
+                const rpm = Math.floor(ep * MAX);
+                drawGauge(rpm);
+                rpmEl.textContent = rpm.toLocaleString();
+                if (barEl) barEl.style.width = (p * 100) + '%';
+                const s = [...stages].reverse().find(x => rpm >= x.rpm);
+                if (s) statusEl.textContent = s.txt;
+                if (p < 1) requestAnimationFrame(frame);
+                else _finishSplash();
+            }
+            requestAnimationFrame(frame);
+        }
+
+        function _finishSplash() {
+            const flash = document.createElement('div');
+            flash.style.cssText = 'position:fixed;inset:0;background:#fff;opacity:0;z-index:10000;pointer-events:none;transition:opacity 0.22s ease;';
+            document.body.appendChild(flash);
+
+            setTimeout(() => { flash.style.opacity = '1'; }, 550);
+            setTimeout(() => {
+                const sp = document.getElementById('splash-screen');
+                const wr = document.getElementById('site-wrapper');
+                if (sp) sp.style.display = 'none';
+                if (wr) { wr.classList.remove('site-content-wrapper'); wr.classList.add('visible'); }
+                setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 300); }, 50);
+            }, 800);
+        }
+
+        document.addEventListener('DOMContentLoaded', startSplashSequence);
+    </script>
+    {% endblock %}
+
+    <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/static/pwa/sw.js')
-                    .then(reg => console.log('ServiceWorker registered:', reg))
-                    .catch(err => console.error('ServiceWorker registration failed:', err));
+                    .then(r => console.log('SW:', r))
+                    .catch(e => console.error('SW fail:', e));
             });
         }
     </script>

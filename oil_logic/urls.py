@@ -16,10 +16,8 @@ urlpatterns = [
     path('garage/', views.garage, name='garage'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('shop/', views.shop_page, name='shop_page'),
-    path('brands/', views.brands_view, name='brands'),
     path('academy/', views.academy, name='academy'),
-    path('showcase/', views.showcase, name='showcase'),
-    path('education/', views.academy, name='academy'),
+    path('locator/', views.service_locator, name='service_locator'),
     path('login/', auth_views.LoginView.as_view(template_name='oil_logic/login.html', authentication_form=EmailAuthenticationForm), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('register/', views.register, name='register'),
@@ -38,4 +36,5 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/brands/', views.BrandListView.as_view(), name='brand-list'),
     path('api/models/', views.ModelListView.as_view(), name='model-list'),
+    path('api/search-garages/', views.search_garages, name='search_garages'),
 ]

@@ -1,0 +1,411 @@
+{% extends 'oil_logic/base.html' %}
+{% load static %}
+
+{% block title %}Service Locator | OilRec Precision Care{% endblock %}
+
+{% block content %}
+<section id="locator-hero" class="relative py-24 overflow-hidden bg-[#0a0a0a]">
+    <div class="absolute inset-0 z-0 opacity-20">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/80 to-[#050505]"></div>
+        <div class="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-red-600/10 blur-[120px] rounded-full"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+        <div class="flex flex-col items-center text-center space-y-6">
+            <div class="flex items-center gap-4">
+                <span class="w-12 h-[1px] bg-red-500"></span>
+                <p class="text-[10px] font-black uppercase tracking-[0.5em] text-red-500">Network Matrix</p>
+                <span class="w-12 h-[1px] bg-red-500"></span>
+            </div>
+            
+            <h1 class="text-6xl md:text-7xl font-black uppercase tracking-tighter leading-[0.85] text-white">
+                SERVICE <span class="text-red-500">LOCATOR</span>
+            </h1>
+            
+            <p class="text-gray-400 text-xl font-light max-w-2xl leading-relaxed">
+                Finding the absolute peak of automotive care near you. Our network of certified centers ensures your engine receives the precision it deserves.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-6 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Sidebar: Controls & Results -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="glass-premium p-8 rounded-[2.5rem] border-white/10 space-y-8">
+                <div class="space-y-4">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-500">Search Parameters</p>
+                    <div class="relative">
+                        <input type="text" id="location-input" placeholder="Enter City or Zip Code" 
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-gray-600 focus:border-red-500/50 focus:outline-none transition-all">
+                        <button onclick="searchNearby()" class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center hover:bg-white hover:text-black transition-all">
+                            <i class="fas fa-search text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <button onclick="useCurrentLocation()" class="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-location-arrow text-xs text-red-500"></i> Current Location
+                    </button>
+                </div>
+
+                <div class="pt-4 border-t border-white/5">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4">Nearby Centers</p>
+                    <div id="results-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
+                        <!-- Result Items will be injected here -->
+                        <div class="text-center py-10 opacity-40 italic text-sm">
+                            Ready for coordinate input...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="lg:col-span-2 relative h-[600px] lg:h-auto min-h-[600px] glass-premium rounded-[3rem] overflow-hidden border-white/5">
+            <div id="map" class="absolute inset-0">
+                <!-- Map Placeholder -->
+                <div class="absolute inset-0 flex items-center justify-center bg-[#0d0d0d]">
+                    <div class="text-center space-y-6">
+                        <div class="relative inline-block">
+                            <div class="absolute inset-0 bg-red-600/20 blur-2xl rounded-full"></div>
+                            <i class="fas fa-map-marked-alt text-6xl text-red-600 relative z-10 animate-pulse"></i>
+                        </div>
+                        <h3 class="text-2xl font-black uppercase tracking-tighter">Initializing Map Matrix</h3>
+                        <p class="text-gray-500 text-sm max-w-xs mx-auto">Please allow location access to synchronize with the nearest service grid.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map HUD -->
+            <div class="absolute top-8 right-8 pointer-events-none">
+                <div class="glass px-4 py-2 rounded-xl border-white/5 flex items-center gap-3">
+                    <div class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                    </div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-white">Live Grid Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Grid -->
+<section class="max-w-7xl mx-auto px-6 py-20">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="glass p-8 rounded-3xl border-white/5 space-y-4 hover:border-red-500/30 transition group">
+            <div class="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center group-hover:bg-red-500 transition">
+                <i class="fas fa-check-double text-red-500 group-hover:text-white transition"></i>
+            </div>
+            <h3 class="text-xl font-bold">Certified Partners</h3>
+            <p class="text-gray-500 text-sm leading-relaxed">Every center in our locator is verified for technical expertise and genuine product handling.</p>
+        </div>
+        <div class="glass p-8 rounded-3xl border-white/5 space-y-4 hover:border-red-500/30 transition group">
+            <div class="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center group-hover:bg-red-500 transition">
+                <i class="fas fa-clock text-red-500 group-hover:text-white transition"></i>
+            </div>
+            <h3 class="text-xl font-bold">Priority Booking</h3>
+            <p class="text-gray-500 text-sm leading-relaxed">OilRec users get priority slots for oil changes and technical inspections.</p>
+        </div>
+        <div class="glass p-8 rounded-3xl border-white/5 space-y-4 hover:border-red-500/30 transition group">
+            <div class="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center group-hover:bg-red-500 transition">
+                <i class="fas fa-tools text-red-500 group-hover:text-white transition"></i>
+            </div>
+            <h3 class="text-xl font-bold">Expert Analysis</h3>
+            <p class="text-gray-500 text-sm leading-relaxed">Complimentary molecular oil health check included at participating premium centers.</p>
+        </div>
+    </div>
+</section>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .place-card:hover {
+        background: rgba(255, 45, 45, 0.05);
+        border-color: rgba(255, 45, 45, 0.2);
+    }
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places"></script>
+
+<script>
+    let map;
+    let service;
+    let infowindow;
+    let markers = [];
+
+    function initMap() {
+        // Default center (can be changed)
+        const defaultLocation = { lat: 20.5937, lng: 78.9629 }; // Center of India
+        
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: defaultLocation,
+            zoom: 5,
+            styles: [
+                { "elementType": "geometry", "stylers": [{ "color": "#212121" }] },
+                { "elementType": "labels.icon", "stylers": [{ "visibility": "off" }] },
+                { "elementType": "labels.text.fill", "stylers": [{ "color": "#757575" }] },
+                { "elementType": "labels.text.stroke", "stylers": [{ "color": "#212121" }] },
+                { "featureType": "administrative", "elementType": "geometry", "stylers": [{ "color": "#757575" }] },
+                { "featureType": "administrative.country", "elementType": "labels.text.fill", "stylers": [{ "color": "#9e9e9e" }] },
+                { "featureType": "road", "elementType": "geometry.fill", "stylers": [{ "color": "#2c2c2c" }] },
+                { "featureType": "road", "elementType": "labels.text.fill", "stylers": [{ "color": "#8a8a8a" }] },
+                { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#000000" }] }
+            ],
+            disableDefaultUI: true,
+            zoomControl: true
+        });
+
+        infowindow = new google.maps.InfoWindow();
+        
+        // Try to get current location immediately
+        useCurrentLocation();
+    }
+
+    function useCurrentLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+                    map.setCenter(pos);
+                    map.setZoom(13);
+                    performSearch(pos);
+                },
+                () => {
+                    console.log("Error: The Geolocation service failed.");
+                }
+            );
+        }
+    }
+
+    function performSearch(location) {
+        // We now prioritize our backend "Bestest" search which can use SerpApi
+        const locationStr = typeof location === 'string' ? location : `${location.lat},${location.lng}`;
+        
+        fetch(`/api/search-garages/?q=${encodeURIComponent(locationStr)}&location=${encodeURIComponent(locationStr)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    displayBestestResults(data.results);
+                } else {
+                    // Fallback to Google Places if backend fails
+                    googleSearchFallback(location);
+                }
+            })
+            .catch(err => {
+                console.error("Backend search failed, falling back to Google Places", err);
+                googleSearchFallback(location);
+            });
+    }
+
+    function googleSearchFallback(location) {
+        if (typeof google === 'undefined') return;
+        const request = {
+            location: location,
+            radius: '10000',
+            query: 'automotive garage oil change shop'
+        };
+        service = new google.maps.places.PlacesService(map);
+        service.textSearch(request, (results, status) => {
+            if (status == google.maps.places.PlacesServiceStatus.OK) {
+                // Adapt Google results to our format
+                const adapted = results.map((res, i) => ({
+                    name: res.name,
+                    address: res.formatted_address,
+                    rating: res.rating || 0,
+                    reviews: res.user_ratings_total || 0,
+                    is_bestest: i === 0,
+                    type: 'Garage',
+                    geometry: res.geometry
+                }));
+                displayBestestResults(adapted);
+            }
+        });
+    }
+
+    function displayBestestResults(results) {
+        clearMarkers();
+        const listContainer = document.getElementById('results-list');
+        listContainer.innerHTML = '';
+
+        if (!results || results.length === 0) {
+            listContainer.innerHTML = '<div class="text-center py-10 opacity-40 italic text-sm">No centers found in this matrix.</div>';
+            return;
+        }
+
+        results.forEach((place, index) => {
+            if (place.geometry && place.geometry.location) {
+                createMarker(place);
+            }
+            addToList(place);
+        });
+    }
+
+    function createMarker(place) {
+        if (!place.geometry || !place.geometry.location || typeof google === 'undefined') return;
+
+        const marker = new google.maps.Marker({
+            map,
+            position: place.geometry.location,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: place.is_bestest ? '#FFD700' : '#FF2D2D', // Gold for bestest
+                fillOpacity: 1,
+                strokeColor: '#000',
+                strokeWeight: 2,
+                scale: place.is_bestest ? 12 : 8
+            }
+        });
+
+        google.maps.event.addListener(marker, "click", () => {
+            infowindow.setContent(`
+                <div style="color: #000; padding: 10px; min-width: 150px;">
+                    <strong style="font-size: 14px;">${place.name}</strong>
+                    ${place.is_bestest ? '<br><span style="background: #FFD700; color: #000; font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: 900;">BESTEST CHOICE</span>' : ''}
+                    <br><span style="font-size: 12px; color: #666;">${place.address}</span><br>
+                    <span style="color: #FF2D2D; font-weight: bold;">Rating: ${place.rating || 'N/A'} ⭐ (${place.reviews || 0} reviews)</span>
+                </div>
+            `);
+            infowindow.open(map, marker);
+        });
+
+        markers.push(marker);
+    }
+
+    function addToList(place) {
+        const listContainer = document.getElementById('results-list');
+        const item = document.createElement('div');
+        
+        // Premium styling for the "Bestest" shop
+        if (place.is_bestest) {
+            item.className = 'place-card glass-premium p-6 rounded-[2rem] border-red-500/30 cursor-pointer transition-all mb-6 relative overflow-hidden group';
+            item.innerHTML = `
+                <div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black px-4 py-1 rounded-bl-xl uppercase tracking-widest z-10">Bestest Choice</div>
+                <div class="absolute inset-0 bg-gradient-to-br from-red-600/10 to-transparent opacity-50"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex gap-4 items-center">
+                            ${place.thumbnail ? `<img src="${place.thumbnail}" class="w-12 h-12 rounded-xl object-cover border border-white/10 shadow-lg" alt="Shop">` : ''}
+                            <h4 class="text-white font-black text-lg leading-tight group-hover:text-red-500 transition-colors">${place.name}</h4>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-black text-red-500">${place.rating || 'N/A'} ⭐</span>
+                            <p class="text-[8px] text-gray-500 uppercase">${place.reviews || 0} Reviews</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 mb-4 line-clamp-1">${place.address}</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="px-2 py-1 rounded-md bg-white/5 text-[8px] font-black uppercase text-gray-400">${place.type}</span>
+                        <span class="px-2 py-1 rounded-md bg-green-500/10 text-[8px] font-black uppercase text-green-500">Verified</span>
+                        ${place.source ? `<span class="px-2 py-1 rounded-md bg-blue-500/10 text-[8px] font-black uppercase text-blue-500">${place.source}</span>` : ''}
+                    </div>
+                    <div class="flex justify-between items-center gap-4">
+                        <a href="${place.directions_url}" target="_blank" onclick="event.stopPropagation()" class="flex-1 py-3 rounded-xl bg-red-600 text-white text-[10px] font-black uppercase tracking-widest text-center hover:bg-white hover:text-black transition-all">
+                            Get Directions
+                        </a>
+                        <button class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white group-hover:bg-red-500 transition-all">
+                            <i class="fas fa-location-arrow text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            item.className = 'place-card glass p-4 rounded-2xl border-white/5 cursor-pointer transition-all hover:border-white/10 mb-4';
+            item.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <h4 class="text-white font-bold text-sm leading-tight max-w-[75%]">${place.name}</h4>
+                    <span class="text-[10px] font-black text-red-500">${place.rating || 'N/A'} ⭐</span>
+                </div>
+                <p class="text-[10px] text-gray-500 truncate mb-3">${place.address}</p>
+                <div class="flex justify-between items-center">
+                    <span class="text-[8px] font-black uppercase tracking-widest text-gray-600">${place.type}</span>
+                    <a href="${place.directions_url}" target="_blank" onclick="event.stopPropagation()" class="text-[9px] font-black uppercase text-red-500 hover:text-white transition-colors">
+                        Directions <i class="fas fa-external-link-alt ml-1"></i>
+                    </a>
+                </div>
+            `;
+        }
+
+        item.onclick = () => {
+            if (place.lat && place.lng && typeof google !== 'undefined') {
+                const pos = { lat: parseFloat(place.lat), lng: parseFloat(place.lng) };
+                map.setCenter(pos);
+                map.setZoom(16);
+                
+                // Find marker if it exists
+                const marker = markers.find(m => {
+                    const mp = m.getPosition();
+                    return Math.abs(mp.lat() - pos.lat) < 0.0001 && Math.abs(mp.lng() - pos.lng) < 0.0001;
+                });
+                if (marker) google.maps.event.trigger(marker, 'click');
+            }
+        };
+
+        listContainer.appendChild(item);
+    }
+
+    function clearMarkers() {
+        for (let i = 0; i < markers.length; i++) {
+            markers[i].setMap(null);
+        }
+        markers = [];
+    }
+
+    function searchNearby() {
+        const input = document.getElementById('location-input').value;
+        if (!input) return;
+
+        // Show loading state
+        const listContainer = document.getElementById('results-list');
+        listContainer.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-12 space-y-4">
+                <div class="w-10 h-10 border-4 border-red-500/20 border-t-red-500 rounded-full animate-spin"></div>
+                <p class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Scanning Grid...</p>
+            </div>
+        `;
+
+        if (typeof google !== 'undefined') {
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: input }, (results, status) => {
+                if (status === "OK") {
+                    map.setCenter(results[0].geometry.location);
+                    map.setZoom(14);
+                    performSearch(results[0].geometry.location);
+                } else {
+                    // Even if geocoding fails, try the backend search with the text query
+                    performSearch(input);
+                }
+            });
+        } else {
+            // No Google Maps, use backend search directly
+            performSearch(input);
+        }
+    }
+
+    // Initialize
+    window.onload = () => {
+        if (typeof google === 'undefined') {
+            console.warn("Google Maps API not loaded. Using fallback locator.");
+            // We can still perform an initial search for a default city
+            performSearch("Mumbai");
+        } else {
+            initMap();
+        }
+    };
+</script>
+{% endblock %}

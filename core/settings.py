@@ -18,8 +18,8 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load .env file
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+# Load .env file and override existing env variables
+load_dotenv(os.path.join(BASE_DIR, '.env'), override=True)
 
 
 # Quick-start development settings - unsuitable for production
@@ -186,6 +186,12 @@ RAZORPAY_KEY_SECRET = 'YourTestSecretHere'
 # Vehicle API (RapidAPI - Vahan)
 VEHICLE_API_KEY = 'YourRapidAPIKeyHere'
 VEHICLE_API_HOST = 'vahan-api.p.rapidapi.com'
+
+# Google Maps API Key
+GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', '')
+
+# SerpApi Key for Garage Locator (Updated)
+SERPAPI_API_KEY = os.environ.get('SERPAPI_API_KEY', '')
 
 # Email Configuration (Console for local testing)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
