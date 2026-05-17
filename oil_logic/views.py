@@ -40,7 +40,18 @@ def recommendation_page(request):
 
 @login_required
 def shop_page(request):
-    oils = Oil.objects.prefetch_related('variants').all()
+    from django.db.models import Case, When, Value, IntegerField, Q
+    oils = Oil.objects.prefetch_related('variants').annotate(
+        has_image_flag=Case(
+            When(
+                (Q(image__isnull=False) & ~Q(image__exact='')) | 
+                (Q(image_url__isnull=False) & ~Q(image_url__exact='')),
+                then=Value(1)
+            ),
+            default=Value(0),
+            output_field=IntegerField()
+        )
+    )
     
     # Filtering
     brands = request.GET.getlist('brand')
@@ -69,13 +80,13 @@ def shop_page(request):
     # Sorting
     sort = request.GET.get('sort', 'newest')
     if sort == 'price_low':
-        oils = oils.order_by('price')
+        oils = oils.order_by('-has_image_flag', 'price')
     elif sort == 'price_high':
-        oils = oils.order_by('-price')
+        oils = oils.order_by('-has_image_flag', '-price')
     elif sort == 'top_rated':
-        oils = oils.order_by('-rating')
+        oils = oils.order_by('-has_image_flag', '-rating')
     else: # newest
-        oils = oils.order_by('-id')
+        oils = oils.order_by('-has_image_flag', '-id')
 
     # Get distinct values for filters
     all_brands = Oil.objects.values_list('brand', flat=True).distinct().order_by('brand')
