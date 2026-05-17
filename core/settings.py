@@ -193,6 +193,9 @@ GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', '')
 # SerpApi Key for Garage Locator (Updated)
 SERPAPI_API_KEY = os.environ.get('SERPAPI_API_KEY', '')
 
+# Groq AI Key for Expert Consultation
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+
 # Email Configuration (Console for local testing)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'support@oilrec.com'

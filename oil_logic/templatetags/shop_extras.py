@@ -39,3 +39,8 @@ def is_gt(value, arg):
         return float(value) > float(arg)
     except (ValueError, TypeError):
         return False
+@register.filter(name='username_from_email')
+def username_from_email(email):
+    if not email:
+        return ""
+    return email.split('@')[0]

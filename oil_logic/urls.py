@@ -25,6 +25,8 @@ urlpatterns = [
     path('cart/', views.cart_view, name='cart_view'),
     path('cart/add/<int:oil_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/remove/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
+    path('cart/apply-promo/', views.apply_promo_code, name='apply_promo_code'),
+    path('checkout-details/', views.checkout_details, name='checkout_details'),
     path('checkout/', views.checkout, name='checkout'),
     path('payment-success/', views.payment_success, name='payment_success'),
     path('simulate-payment/', views.simulate_payment, name='simulate_payment'),
@@ -37,4 +39,8 @@ urlpatterns = [
     path('api/brands/', views.BrandListView.as_view(), name='brand-list'),
     path('api/models/', views.ModelListView.as_view(), name='model-list'),
     path('api/search-garages/', views.search_garages, name='search_garages'),
+    path('ai-dashboard/', views.ai_dashboard, name='ai_dashboard'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('api/model-metrics/', views.get_model_metrics, name='model_metrics'),
+    path('api/dataset-stats/', views.get_dataset_stats, name='dataset_stats'),
 ]

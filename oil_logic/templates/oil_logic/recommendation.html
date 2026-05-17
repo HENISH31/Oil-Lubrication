@@ -898,10 +898,31 @@
                     </table>
                 </div>
 
+                <div id="ai-consultant-box" class="glass-premium p-8 rounded-[2.5rem] border border-red-500/20 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <i class="fas fa-robot text-6xl text-red-500"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-8 h-8 rounded-lg bg-red-500 flex items-center justify-center text-white text-xs">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <h4 class="text-sm font-black uppercase tracking-[0.2em] text-white">Expert AI Consultant Verdict</h4>
+                        </div>
+                        <p id="ai-verdict-text" class="text-gray-300 leading-relaxed font-medium italic text-lg">
+                            ${v.ai_verdict || "Analyzing complex engine dynamics..."}
+                        </p>
+                        <div class="mt-4 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-gray-500">Live Technical Analysis Verified</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
                     <div class="glass p-6 rounded-2xl border-t-2 border-red-500/50">
                         <h5 class="text-[10px] font-black uppercase text-red-500 mb-2">Maximum Life</h5>
-                        <p class="text-[11px] text-gray-400 leading-relaxed italic">Specifically chosen for high mileage protection.</p>
+                        <p class="text-[11px] text-gray-400 leading-relaxed italic">${v.explanation || "Specifically chosen for high mileage protection."}</p>
                     </div>
                     <div class="glass p-6 rounded-2xl border-t-2 border-white/10">
                         <h5 class="text-[10px] font-black uppercase text-white/50 mb-2">Expert Balanced</h5>
@@ -926,6 +947,13 @@
 
         console.log("Adding oil to cart:", oilId);
         const csrfToken = document.getElementById('csrf_token').value;
+        
+        // Fetch specific price and volume for the recommended oil
+        const oilData = window.oilLookupMap[oilId];
+        const payload = oilData ? {
+            price: oilData.rec_price || oilData.price,
+            volume: oilData.rec_volume || oilData.volume_liters || 1.0
+        } : {};
 
         try {
             const response = await fetch(`${window.location.origin}/cart/add/${oilId}/`, {
@@ -933,7 +961,8 @@
                 headers: {
                     'X-CSRFToken': csrfToken,
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify(payload)
             });
 
             const data = await response.json();

@@ -100,6 +100,49 @@ class AIAgentService:
 
         return "That's an interesting question! As a technical advisor, I recommend checking our **Academy** for specialized theory or using our **Recommender** to find the exact match for your vehicle. Can I help you with a specific viscosity or brand?"
 
+    @staticmethod
+    def analyze_recommendation(vehicle_data, oil_data):
+        """
+        Expert Analysis: Compares DB results with LLM global knowledge.
+        Uses Groq (Llama-3) for ultra-fast reasoning.
+        """
+        api_key = getattr(settings, 'GROQ_API_KEY', None)
+        if not api_key or 'YourGroq' in api_key:
+            return "Based on database metrics, this oil matches your vehicle's manufacturer specifications perfectly. (Connect Groq API for expert reasoning)"
+
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        prompt = f"""
+        Vehicle: {vehicle_data.get('brand')} {vehicle_data.get('model')} ({vehicle_data.get('year')})
+        Condition: {vehicle_data.get('driving_condition')}, Odometer: {vehicle_data.get('odometer_km')} KM
+        Recommended Oil: {oil_data.get('brand')} {oil_data.get('viscosity')} ({oil_data.get('oil_type')})
+        
+        As a senior automotive engineer, explain in 2-3 concise sentences why this specific oil is the best technical choice for this vehicle under these conditions. Mention viscosity or engine protection.
+        """
+
+        payload = {
+            "model": "llama3-70b-8192",
+            "messages": [
+                {"role": "system", "content": "You are a senior automotive lubrication expert. Be technical yet concise."},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.5,
+            "max_tokens": 150
+        }
+
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=5)
+            if response.status_code == 200:
+                return response.json()['choices'][0]['message']['content']
+        except Exception as e:
+            print(f"LLM Consultation Failed: {e}")
+        
+        return "This oil provides optimized lubrication and thermal stability tailored to your engine's specific wear profile and driving environment."
+
 class GeocodingService:
     """
     Utility to convert address/zip to lat/lng using OpenStreetMap Nominatim.

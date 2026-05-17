@@ -45,14 +45,29 @@
 
             <!-- Specs Bar -->
             <div class="flex gap-2 relative z-10">
-                <span
-                    class="px-3 py-1 bg-white/[0.02] border border-white/5 rounded-md text-[8px] font-black uppercase tracking-widest text-gray-500">
+                <span class="px-3 py-1 bg-white/[0.02] border border-white/5 rounded-md text-[8px] font-black uppercase tracking-widest text-gray-500">
                     {{ record.vehicle.year }}
                 </span>
-                <span
-                    class="px-3 py-1 bg-white/[0.02] border border-white/5 rounded-md text-[8px] font-black uppercase tracking-widest text-gray-500">
+                <span class="px-3 py-1 bg-white/[0.02] border border-white/5 rounded-md text-[8px] font-black uppercase tracking-widest text-gray-500">
                     {{ record.vehicle.engine_type }}
                 </span>
+            </div>
+
+            <!-- Predictive Intelligence -->
+            <div class="space-y-4 pt-4 border-t border-white/5 relative z-10">
+                <div class="flex justify-between items-end">
+                    <p class="text-[9px] text-gray-600 font-black uppercase tracking-widest">Oil Health Index</p>
+                    <p class="text-xs font-black text-white">{{ record.oil_health_score }}%</p>
+                </div>
+                <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r oil-health-bar {% if record.oil_health_score < 20 %}from-red-600 to-red-400{% elif record.oil_health_score < 50 %}from-yellow-600 to-yellow-400{% else %}from-green-600 to-green-400{% endif %}" 
+                         data-health="{{ record.oil_health_score }}"></div>
+                </div>
+                
+                <div class="p-4 bg-red-500/5 rounded-2xl border border-red-500/10">
+                    <p class="text-[8px] text-red-500/60 font-black uppercase tracking-widest mb-1">Predicted Next Service</p>
+                    <p class="text-sm font-black text-white italic">{{ record.predict_service_date|date:"M d, Y" }}</p>
+                </div>
             </div>
 
             <!-- Action Area -->
@@ -83,6 +98,13 @@
 </section>
 
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.oil-health-bar').forEach(bar => {
+            const health = bar.getAttribute('data-health');
+            if (health) bar.style.width = health + '%';
+        });
+    });
+
     async function removeVehicle(recordId) {
         if (!confirm('Permanently remove this unit from the tactical fleet?')) return;
 

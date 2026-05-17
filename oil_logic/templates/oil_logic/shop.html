@@ -100,6 +100,32 @@
 
     <!-- MAIN CONTENT -->
     <main class="flex-1 min-w-0 bg-[#050505]">
+        
+        <!-- PROMO BANNER -->
+        <style>
+            @keyframes marquee {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
+            }
+            .animate-marquee {
+                animation: marquee 15s linear infinite;
+                display: flex;
+                width: max-content;
+            }
+        </style>
+        <div class="w-full bg-red-600 text-white overflow-hidden py-2 relative z-50">
+            <div class="animate-marquee flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.2em]">
+                <span><i class="fas fa-bullhorn mr-2"></i> Get Ready! Code <span class="bg-white text-red-600 px-2 py-0.5 rounded ml-1">RUSH15</span> for 5% off goes live TOMORROW!</span>
+                <span><i class="fas fa-clock mr-2"></i> Fill your cart now!</span>
+                <span><i class="fas fa-bullhorn mr-2"></i> Get Ready! Code <span class="bg-white text-red-600 px-2 py-0.5 rounded ml-1">RUSH15</span> for 5% off goes live TOMORROW!</span>
+                <span><i class="fas fa-clock mr-2"></i> Fill your cart now!</span>
+                <span><i class="fas fa-bullhorn mr-2"></i> Get Ready! Code <span class="bg-white text-red-600 px-2 py-0.5 rounded ml-1">RUSH15</span> for 5% off goes live TOMORROW!</span>
+                <span><i class="fas fa-clock mr-2"></i> Fill your cart now!</span>
+                <span><i class="fas fa-bullhorn mr-2"></i> Get Ready! Code <span class="bg-white text-red-600 px-2 py-0.5 rounded ml-1">RUSH15</span> for 5% off goes live TOMORROW!</span>
+                <span><i class="fas fa-clock mr-2"></i> Fill your cart now!</span>
+            </div>
+        </div>
+
         <div class="max-w-7xl mx-auto px-4 sm:px-8 py-8 lg:py-12">
             <!-- Top Bar -->
             <div

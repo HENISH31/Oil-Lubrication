@@ -9,14 +9,21 @@ class CustomRegistrationForm(UserCreationForm):
     username = forms.CharField(max_length=150, required=False, help_text="Optional: Choose a unique username. If left blank, we will use your email prefix.")
     full_name = forms.CharField(max_length=100, required=True, help_text="Enter your full name")
     tagline = forms.CharField(max_length=255, required=False, help_text="Optional: A short tagline for your profile.")
+    referral_code = forms.CharField(max_length=20, required=False, help_text="Optional: Did a friend refer you? Enter their code for ₹50 bonus!")
     
     class Meta(UserCreationForm.Meta):
-        fields = ('email', 'username', 'full_name', 'tagline')
+        fields = ('email', 'username', 'full_name', 'tagline', 'referral_code')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # We want to keep username in fields but make it not required
         self.fields['username'].required = False
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            return email.lower()
+        return email
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -61,9 +68,10 @@ class EmailAuthenticationForm(AuthenticationForm):
         password = self.cleaned_data.get('password')
 
         if email and password:
-            # Check if user exists with this email
+            email = email.lower()
+            # Check if user exists with this email (case-insensitive for backward compatibility)
             try:
-                user = User.objects.get(email=email)
+                user = User.objects.get(email__iexact=email)
                 self.user_cache = authenticate(self.request, username=user.username, password=password)
                 if self.user_cache is None:
                     raise forms.ValidationError(self.error_messages['invalid_login'], code='invalid_login')

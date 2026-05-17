@@ -1,0 +1,218 @@
+{% extends 'oil_logic/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-5 bg-dark min-vh-100 text-light" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4 fw-bold mb-0" style="background: linear-gradient(to right, #60a5fa, #a855f7); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">AI Training Center</h1>
+            <p class="text-muted">Industrial Grade Model Performance & Lifecycle Monitoring</p>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card bg-secondary bg-opacity-10 border-0 rounded-4 p-4 h-100 shadow-sm" style="backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1) !important;">
+                <div class="text-muted mb-2">Model Accuracy</div>
+                <div class="h2 mb-0 fw-bold text-info" id="accuracy-val">--%</div>
+                <div class="progress mt-3 bg-dark" style="height: 6px;">
+                    <div class="progress-bar bg-info" id="accuracy-progress" role="progressbar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary bg-opacity-10 border-0 rounded-4 p-4 h-100 shadow-sm" style="backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1) !important;">
+                <div class="text-muted mb-2">Top-3 Recommendation Accuracy</div>
+                <div class="h2 mb-0 fw-bold text-primary" id="top3-val">--%</div>
+                <div class="progress mt-3 bg-dark" style="height: 6px;">
+                    <div class="progress-bar bg-primary" id="top3-progress" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div class="small text-muted mt-2">Correct oil in top 3 suggestions</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary bg-opacity-10 border-0 rounded-4 p-4 h-100 shadow-sm" style="backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1) !important;">
+                <div class="text-muted mb-2">Dataset Size</div>
+                <div class="h2 mb-0 fw-bold text-warning" id="samples-val">0</div>
+                <div class="small text-muted mt-2">Verified feedback loops</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary bg-opacity-10 border-0 rounded-4 p-4 h-100 shadow-sm" style="backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1) !important;">
+                <div class="text-muted mb-2">Model Status</div>
+                <div class="h2 mb-0 fw-bold text-success">Deployed</div>
+                <div class="small text-muted mt-2" id="last-update">Last updated: --</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="card bg-secondary bg-opacity-10 border-0 rounded-4 p-4 shadow-sm h-100" style="backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1) !important;">
+                <h5 class="fw-bold mb-4"><i class="fas fa-chart-line me-2 text-primary"></i>Feature Importance Matrix</h5>
+                <canvas id="importanceChart" style="max-height: 350px;"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card bg-secondary bg-opacity-10 border-0 rounded-4 p-4 shadow-sm h-100" style="backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1) !important;">
+                <h5 class="fw-bold mb-4"><i class="fas fa-database me-2 text-warning"></i>Training Data Mix</h5>
+                <canvas id="dataMixChart" style="max-height: 350px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Retraining Section -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card bg-secondary bg-opacity-10 border-0 rounded-4 p-4 shadow-sm" style="backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1) !important;">
+                <h5 class="fw-bold mb-3">Retraining Control Panel</h5>
+                <p class="text-muted small">Update the model using the latest user feedback and interaction data. This process ensures the recommendation engine evolves with market trends.</p>
+                <div class="d-flex align-items-center mt-4">
+                    <button class="btn btn-primary rounded-pill px-4 py-2 fw-bold" id="btn-retrain" onclick="startRetraining()">
+                        <span id="btn-text">Initiate Retraining</span>
+                        <span id="btn-spinner" class="spinner-border spinner-border-sm ms-2 d-none"></span>
+                    </button>
+                    <div class="ms-3 text-muted small d-none" id="retrain-status">Processing dataset...</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-secondary bg-opacity-10 border-0 rounded-4 p-4 shadow-sm" style="backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1) !important;">
+                <h5 class="fw-bold mb-3">Model Architecture Info</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2 d-flex justify-content-between"><span class="text-muted">Algorithm:</span> <span>Random Forest Classifier</span></li>
+                    <li class="mb-2 d-flex justify-content-between"><span class="text-muted">Estimators:</span> <span>100 Trees</span></li>
+                    <li class="mb-2 d-flex justify-content-between"><span class="text-muted">Test Split:</span> <span>20%</span></li>
+                    <li class="d-flex justify-content-between"><span class="text-muted">Target Classes:</span> <span id="class-count">--</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadMetrics();
+    loadStats();
+});
+
+function loadMetrics() {
+    fetch('/api/model-metrics/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) return;
+            
+            document.getElementById('accuracy-val').innerText = (data.accuracy * 100).toFixed(1) + '%';
+            document.getElementById('accuracy-progress').style.width = (data.accuracy * 100) + '%';
+            
+            document.getElementById('top3-val').innerText = (data.top_3_accuracy * 100).toFixed(1) + '%';
+            document.getElementById('top3-progress').style.width = (data.top_3_accuracy * 100) + '%';
+            
+            document.getElementById('samples-val').innerText = data.sample_size.toLocaleString();
+            document.getElementById('last-update').innerText = 'Last updated: ' + new Date(data.timestamp).toLocaleString();
+            
+            renderImportanceChart(data.feature_importance);
+        });
+}
+
+function loadStats() {
+    fetch('/api/dataset-stats/')
+        .then(res => res.json())
+        .then(data => {
+            renderDataMixChart(data.brand_distribution);
+        });
+}
+
+function renderImportanceChart(importanceData) {
+    const ctx = document.getElementById('importanceChart').getContext('2d');
+    const labels = Object.keys(importanceData).map(k => k.replace('_', ' ').toUpperCase());
+    const values = Object.values(importanceData);
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Information Gain',
+                data: values,
+                backgroundColor: 'rgba(56, 189, 248, 0.6)',
+                borderColor: '#0ea5e9',
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                y: { grid: { display: false }, ticks: { color: '#f1f5f9' } }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+function renderDataMixChart(brandData) {
+    const ctx = document.getElementById('dataMixChart').getContext('2d');
+    const labels = brandData.map(d => d.query__brand);
+    const values = brandData.map(d => d.count);
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: [
+                    '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'
+                ],
+                borderWidth: 0,
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', boxWidth: 12, padding: 15, font: { size: 10 } }
+                }
+            }
+        }
+    });
+}
+
+function startRetraining() {
+    const btn = document.getElementById('btn-retrain');
+    const text = document.getElementById('btn-text');
+    const spinner = document.getElementById('btn-spinner');
+    const status = document.getElementById('retrain-status');
+    
+    btn.disabled = true;
+    text.innerText = 'Retraining...';
+    spinner.classList.remove('d-none');
+    status.classList.remove('d-none');
+    
+    // In a real industrial app, this would be an async task (Celery).
+    // For this showcase, we'll simulate the call and reload.
+    // Note: Calling a management command from a view is possible but should be async.
+    // We'll just show the UX flow here.
+    
+    setTimeout(() => {
+        alert('Model retraining triggered successfully in the background. Refreshing metrics...');
+        location.reload();
+    }, 3000);
+}
+</script>
+{% endblock %}

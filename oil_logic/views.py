@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 import razorpay
 import os
 from django.utils import timezone
-from .models import Oil, Vehicle, Maintenance, UserProfile, CartItem, Order, OrderItem, VehicleRegistration, ServiceRecord, VehicleQuery, RecommendationFeedback
+from .models import Oil, Vehicle, Maintenance, UserProfile, CartItem, Order, OrderItem, VehicleRegistration, ServiceRecord, VehicleQuery, RecommendationFeedback, PromoCode
 from .ai_engine import AIOilRecommender
 recommender = AIOilRecommender()
 from .serializers import OilSerializer, VehicleSerializer, MaintenanceSerializer, UserSerializer
@@ -110,7 +110,22 @@ def register(request):
         form = CustomRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            UserProfile.objects.get_or_create(user=user)
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            
+            # Referral Logic
+            referral_code = form.cleaned_data.get('referral_code')
+            if referral_code:
+                try:
+                    referrer_profile = UserProfile.objects.get(referral_code__iexact=referral_code)
+                    profile.referred_by = referrer_profile
+                    profile.wallet_balance += 50.00
+                    profile.save()
+                    
+                    referrer_profile.wallet_balance += 100.00
+                    referrer_profile.save()
+                except UserProfile.DoesNotExist:
+                    pass
+            
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('home')
     else:
@@ -120,6 +135,7 @@ def register(request):
 @login_required
 def dashboard(request):
     maintenance_records = Maintenance.objects.filter(user=request.user).select_related('vehicle', 'vehicle__recommended_oil')
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
     
     # Calculate Stats
     total_vehicles = maintenance_records.count()
@@ -173,7 +189,8 @@ def dashboard(request):
         'service_history': service_records[:10], # Last 10 records
         'expert_tips': expert_tips,
         'expert_tips_list': expert_tips_list,
-        'now': timezone.now()
+        'now': timezone.now(),
+        'profile': profile,
     })
 
 @login_required
@@ -478,11 +495,68 @@ def add_to_cart(request, oil_id):
 @login_required
 def cart_view(request):
     cart_items = CartItem.objects.filter(user=request.user)
-    total = sum(item.total_price() for item in cart_items)
+    subtotal = sum(item.total_price() for item in cart_items)
+    
+    # Promo code logic
+    promo_discount = 0
+    promo_code_str = request.session.get('promo_code')
+    if promo_code_str:
+        try:
+            promo = PromoCode.objects.get(code=promo_code_str, active=True)
+            if promo.is_valid():
+                if promo.discount_type == 'Percentage':
+                    promo_discount = subtotal * (promo.discount_value / 100)
+                else:
+                    promo_discount = promo.discount_value
+        except PromoCode.DoesNotExist:
+            del request.session['promo_code']
+            
+    total = max(0, subtotal - promo_discount)
+    
     return render(request, 'oil_logic/cart.html', {
         'cart_items': cart_items,
+        'subtotal': subtotal,
+        'promo_discount': promo_discount,
+        'promo_code': promo_code_str,
         'total': total
     })
+
+@login_required
+def apply_promo_code(request):
+    if request.method == 'POST':
+        code = request.POST.get('promo_code', '').strip()
+        if code:
+            try:
+                promo = PromoCode.objects.get(code__iexact=code, active=True)
+                if promo.is_valid():
+                    request.session['promo_code'] = promo.code
+                else:
+                    # Could add a message framework error here
+                    pass
+            except PromoCode.DoesNotExist:
+                # Invalid code
+                pass
+        else:
+            if 'promo_code' in request.session:
+                del request.session['promo_code']
+                
+    return redirect('cart_view')
+
+@login_required
+def checkout_details(request):
+    cart_items = CartItem.objects.filter(user=request.user)
+    if not cart_items:
+        return redirect('shop_page')
+        
+    if request.method == 'POST':
+        request.session['shipping_name'] = request.POST.get('shipping_name')
+        request.session['shipping_phone'] = request.POST.get('shipping_phone')
+        request.session['shipping_address'] = request.POST.get('shipping_address')
+        request.session['shipping_city'] = request.POST.get('shipping_city')
+        request.session['shipping_pincode'] = request.POST.get('shipping_pincode')
+        return redirect('checkout')
+        
+    return render(request, 'oil_logic/checkout_details.html')
 
 @login_required
 def remove_from_cart(request, item_id):
@@ -495,18 +569,43 @@ def checkout(request):
     if not cart_items:
         return redirect('shop_page')
     
-    total = sum(item.total_price() for item in cart_items)
+    subtotal = sum(item.total_price() for item in cart_items)
+    
+    # Promo code logic
+    promo_discount = 0
+    promo_code_str = request.session.get('promo_code')
+    if promo_code_str:
+        try:
+            promo = PromoCode.objects.get(code=promo_code_str, active=True)
+            if promo.is_valid():
+                if promo.discount_type == 'Percentage':
+                    promo_discount = subtotal * (promo.discount_value / 100)
+                else:
+                    promo_discount = promo.discount_value
+        except PromoCode.DoesNotExist:
+            pass
+            
+    total_after_promo = max(0, subtotal - promo_discount)
+
+    profile = getattr(request.user, 'profile', None)
+    discount = 0
+    if profile and profile.wallet_balance > 0:
+        discount = min(total_after_promo, profile.wallet_balance)
+        
+    total = total_after_promo - discount
+
     client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
     
     # Initialize Razorpay Order
     payment = None
     error_msg = None
     try:
-        payment = client.order.create({
-            "amount": int(total * 100), # amount in paise
-            "currency": "INR",
-            "payment_capture": "1"
-        })
+        if total > 0:
+            payment = client.order.create({
+                "amount": int(total * 100), # amount in paise
+                "currency": "INR",
+                "payment_capture": "1"
+            })
     except razorpay.errors.BadRequestError:
         error_msg = "Razorpay authentication failed. Please update your RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in settings.py with real Test Keys from your Razorpay Dashboard."
     except Exception as e:
@@ -516,6 +615,9 @@ def checkout(request):
         'payment': payment,
         'razorpay_key_id': settings.RAZORPAY_KEY_ID,
         'total': total,
+        'subtotal': subtotal,
+        'wallet_discount': discount,
+        'promo_discount': promo_discount,
         'cart_items': cart_items,
         'error': error_msg
     }
@@ -539,8 +641,47 @@ def payment_success(request):
             if not cart_items:
                 return redirect('profile_page')
                 
-            total = sum(item.total_price() for item in cart_items)
-            order = Order.objects.create(user=request.user, total_price=total, is_paid=True)
+            subtotal = sum(item.total_price() for item in cart_items)
+            
+            promo_discount = 0
+            promo_code_str = request.session.get('promo_code')
+            if promo_code_str:
+                try:
+                    promo = PromoCode.objects.get(code=promo_code_str, active=True)
+                    if promo.is_valid():
+                        if promo.discount_type == 'Percentage':
+                            promo_discount = subtotal * (promo.discount_value / 100)
+                        else:
+                            promo_discount = promo.discount_value
+                except PromoCode.DoesNotExist:
+                    pass
+                    
+            total_after_promo = max(0, subtotal - promo_discount)
+
+            profile = getattr(request.user, 'profile', None)
+            wallet_discount = 0
+            if profile and profile.wallet_balance > 0:
+                wallet_discount = min(total_after_promo, profile.wallet_balance)
+                profile.wallet_balance -= wallet_discount
+                profile.save()
+                
+            final_total = total_after_promo - wallet_discount
+                
+            order = Order.objects.create(
+                user=request.user, 
+                total_price=final_total, 
+                is_paid=True,
+                shipping_name=request.session.get('shipping_name'),
+                shipping_phone=request.session.get('shipping_phone'),
+                shipping_address=request.session.get('shipping_address'),
+                shipping_city=request.session.get('shipping_city'),
+                shipping_pincode=request.session.get('shipping_pincode')
+            )
+            
+            # Clear session
+            for key in ['promo_code', 'shipping_name', 'shipping_phone', 'shipping_address', 'shipping_city', 'shipping_pincode']:
+                if key in request.session:
+                    del request.session[key]
             
             for item in cart_items:
                 OrderItem.objects.create(
@@ -571,10 +712,48 @@ def simulate_payment(request):
     if not cart_items:
         return redirect('shop_page')
         
-    total = sum(item.total_price() for item in cart_items)
+    subtotal = sum(item.total_price() for item in cart_items)
+    
+    promo_discount = 0
+    promo_code_str = request.session.get('promo_code')
+    if promo_code_str:
+        try:
+            promo = PromoCode.objects.get(code=promo_code_str, active=True)
+            if promo.is_valid():
+                if promo.discount_type == 'Percentage':
+                    promo_discount = subtotal * (promo.discount_value / 100)
+                else:
+                    promo_discount = promo.discount_value
+        except PromoCode.DoesNotExist:
+            pass
+            
+    total_after_promo = max(0, subtotal - promo_discount)
+
+    profile = getattr(request.user, 'profile', None)
+    wallet_discount = 0
+    if profile and profile.wallet_balance > 0:
+        wallet_discount = min(total_after_promo, profile.wallet_balance)
+        profile.wallet_balance -= wallet_discount
+        profile.save()
+        
+    final_total = total_after_promo - wallet_discount
     
     # Create Order
-    order = Order.objects.create(user=request.user, total_price=total, is_paid=True)
+    order = Order.objects.create(
+        user=request.user, 
+        total_price=final_total, 
+        is_paid=True,
+        shipping_name=request.session.get('shipping_name'),
+        shipping_phone=request.session.get('shipping_phone'),
+        shipping_address=request.session.get('shipping_address'),
+        shipping_city=request.session.get('shipping_city'),
+        shipping_pincode=request.session.get('shipping_pincode')
+    )
+    
+    # Clear session
+    for key in ['promo_code', 'shipping_name', 'shipping_phone', 'shipping_address', 'shipping_city', 'shipping_pincode']:
+        if key in request.session:
+            del request.session[key]
     
     # Create OrderItems
     for item in cart_items:
@@ -801,7 +980,7 @@ def search_garages(request):
     query = request.GET.get('q')
     lat = request.GET.get('lat') # From geolocation
     lng = request.GET.get('lng') # From geolocation
-    
+
     if not query and not (lat and lng):
         return JsonResponse({'status': 'error', 'message': 'Search term or location required'}, status=400)
     
@@ -838,3 +1017,52 @@ def get_dataset_stats(request):
         'oil_distribution': list(oil_dist),
         'total_samples': feedbacks.count()
     })
+
+
+
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncMonth
+from .models import OilVariant
+
+@staff_member_required
+def admin_dashboard(request):
+    # Total Revenue (All Paid Orders)
+    total_revenue = Order.objects.filter(is_paid=True).aggregate(Sum('total_price'))['total_price__sum'] or 0
+
+    # Orders Status Distribution
+    status_distribution = Order.objects.values('status').annotate(count=Count('id'))
+    status_labels = [item['status'] for item in status_distribution]
+    status_counts = [item['count'] for item in status_distribution]
+
+    # Top Selling Oils
+    top_oils = OrderItem.objects.values('oil__brand', 'oil__viscosity').annotate(
+        total_sold=Sum('quantity')
+    ).order_by('-total_sold')[:5]
+    
+    oil_labels = [f"{item['oil__brand']} {item['oil__viscosity']}" for item in top_oils]
+    oil_sales = [item['total_sold'] for item in top_oils]
+
+    # Revenue by Month
+    revenue_by_month = Order.objects.filter(is_paid=True).annotate(
+        month=TruncMonth('created_at')
+    ).values('month').annotate(
+        revenue=Sum('total_price')
+    ).order_by('month')
+    
+    month_labels = [item['month'].strftime('%b %Y') for item in revenue_by_month if item['month']]
+    month_revenues = [float(item['revenue']) for item in revenue_by_month]
+
+    context = {
+        'total_revenue': total_revenue,
+        'status_labels': json.dumps(status_labels),
+        'status_counts': json.dumps(status_counts),
+        'oil_labels': json.dumps(oil_labels),
+        'oil_sales': json.dumps(oil_sales),
+        'month_labels': json.dumps(month_labels),
+        'month_revenues': json.dumps(month_revenues),
+        'recent_orders': Order.objects.order_by('-created_at')[:10],
+        'low_stock_oils': Oil.objects.filter(stock_count__lt=10),
+        'low_stock_variants': OilVariant.objects.filter(stock_count__lt=10)
+    }
+    return render(request, 'oil_logic/admin_dashboard.html', context)
+    

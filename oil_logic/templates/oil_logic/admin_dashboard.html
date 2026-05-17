@@ -1,0 +1,198 @@
+{% extends 'oil_logic/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="mb-10 flex justify-between items-end">
+        <div>
+            <h2 class="text-xs font-black uppercase tracking-[0.4em] text-red-500 mb-2">Management</h2>
+            <h1 class="text-4xl font-black uppercase tracking-tighter">Admin <span class="text-white/30">Dashboard</span></h1>
+        </div>
+        <a href="/admin/" class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold uppercase tracking-widest text-xs transition-all">Go to Django Admin</a>
+    </div>
+
+    <!-- Top KPIs -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="glass-premium p-8 rounded-3xl">
+            <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Total Revenue</p>
+            <h3 class="text-4xl font-black text-white">₹{{ total_revenue }}</h3>
+        </div>
+        <div class="glass-premium p-8 rounded-3xl">
+            <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Recent Orders</p>
+            <h3 class="text-4xl font-black text-white">{{ recent_orders|length }}</h3>
+        </div>
+        <div class="glass-premium p-8 rounded-3xl bg-red-600/20 border border-red-500/30">
+            <p class="text-xs font-bold uppercase tracking-widest text-red-400 mb-2">Action Required</p>
+            <a href="/admin/oil_logic/productreview/" class="text-sm text-white underline">Moderate Reviews &rarr;</a>
+            <br>
+            <a href="/admin/oil_logic/order/" class="text-sm text-white underline">Process Orders &rarr;</a>
+        </div>
+    </div>
+
+    <!-- Low Stock Alerts -->
+    {% if low_stock_oils or low_stock_variants %}
+    <div class="mb-10 p-6 glass-premium border-red-500/50 bg-red-500/10 rounded-3xl animate-pulse">
+        <div class="flex items-center gap-4 mb-4">
+            <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+            <h3 class="text-xl font-black text-red-400 uppercase tracking-widest">Low Stock Alert</h3>
+        </div>
+        <ul class="list-disc list-inside text-gray-300 space-y-2">
+            {% for oil in low_stock_oils %}
+            <li><span class="font-bold text-white">{{ oil.brand }} {{ oil.viscosity }}</span> - Only <span class="text-red-400 font-bold">{{ oil.stock_count }}</span> left in stock!</li>
+            {% endfor %}
+            {% for variant in low_stock_variants %}
+            <li><span class="font-bold text-white">{{ variant.oil.brand }} {{ variant.volume_liters }}L</span> - Only <span class="text-red-400 font-bold">{{ variant.stock_count }}</span> left in stock!</li>
+            {% endfor %}
+        </ul>
+        <div class="mt-4">
+            <a href="/admin/oil_logic/oil/" class="text-xs font-bold text-red-400 hover:text-red-300 uppercase tracking-widest underline">Manage Inventory &rarr;</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div class="glass-premium p-8 rounded-3xl">
+            <h3 class="text-xl font-bold mb-6">Revenue Overview</h3>
+            <canvas id="revenueChart"></canvas>
+        </div>
+        
+        <div class="glass-premium p-8 rounded-3xl">
+            <h3 class="text-xl font-bold mb-6">Top Selling Oils</h3>
+            <canvas id="topOilsChart"></canvas>
+        </div>
+
+        <div class="glass-premium p-8 rounded-3xl lg:col-span-2">
+            <h3 class="text-xl font-bold mb-6">Order Status Distribution</h3>
+            <div class="w-full md:w-1/2 mx-auto">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div class="glass-premium p-8 rounded-3xl">
+        <h3 class="text-xl font-bold mb-6">Recent Orders</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-gray-300">
+                <thead class="text-xs uppercase bg-white/5 text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 rounded-l-xl">Order ID</th>
+                        <th scope="col" class="px-6 py-3">Customer</th>
+                        <th scope="col" class="px-6 py-3">Amount</th>
+                        <th scope="col" class="px-6 py-3">Status</th>
+                        <th scope="col" class="px-6 py-3 rounded-r-xl">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td class="px-6 py-4 font-bold text-white">#{{ order.id }}</td>
+                        <td class="px-6 py-4">{{ order.user.username }}</td>
+                        <td class="px-6 py-4">₹{{ order.total_price }}</td>
+                        <td class="px-6 py-4">
+                            {% if order.status == 'Delivered' %}
+                                <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs">{{ order.status }}</span>
+                            {% elif order.status == 'Shipped' %}
+                                <span class="px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs">{{ order.status }}</span>
+                            {% elif order.status == 'Pending' %}
+                                <span class="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs">{{ order.status }}</span>
+                            {% else %}
+                                <span class="px-2 py-1 bg-white/10 text-white rounded-full text-xs">{{ order.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">{{ order.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">No recent orders found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Parse data from Django context
+        const monthLabels = JSON.parse('{{ month_labels|escapejs }}');
+        const monthRevenues = JSON.parse('{{ month_revenues|escapejs }}');
+        
+        const oilLabels = JSON.parse('{{ oil_labels|escapejs }}');
+        const oilSales = JSON.parse('{{ oil_sales|escapejs }}');
+        
+        const statusLabels = JSON.parse('{{ status_labels|escapejs }}');
+        const statusCounts = JSON.parse('{{ status_counts|escapejs }}');
+
+        // Revenue Chart (Line)
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'line',
+            data: {
+                labels: monthLabels,
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: monthRevenues,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Top Oils Chart (Bar)
+        new Chart(document.getElementById('topOilsChart'), {
+            type: 'bar',
+            data: {
+                labels: oilLabels,
+                datasets: [{
+                    label: 'Units Sold',
+                    data: oilSales,
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Status Chart (Doughnut)
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    data: statusCounts,
+                    backgroundColor: ['#eab308', '#3b82f6', '#22c55e', '#ef4444', '#6b7280'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right', labels: { color: '#fff' } }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

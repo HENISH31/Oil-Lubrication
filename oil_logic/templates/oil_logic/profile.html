@@ -53,38 +53,66 @@
                 <div class="space-y-6">
                     {% for order in orders %}
                     <div class="glass-premium rounded-[2.5rem] overflow-hidden border-white/5 hover:border-red-500/30 transition-all duration-500">
-                        <div class="p-8 bg-white/[0.02] flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="p-8 bg-white/[0.02] flex flex-col md:flex-row justify-between items-center gap-4 cursor-pointer" onclick="document.getElementById('order-details-{{ order.id }}').classList.toggle('hidden')">
                             <div>
-                                <p class="text-[10px] font-black uppercase tracking-widest text-red-500">Order #{{ order.id }}</p>
+                                <div class="flex items-center gap-3 mb-1">
+                                    <p class="text-[10px] font-black uppercase tracking-widest text-red-500">Order #{{ order.id }}</p>
+                                    
+                                    {% if order.status == 'Delivered' %}
+                                    <span class="px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-[8px] font-black uppercase tracking-widest">{{ order.status }}</span>
+                                    {% elif order.status == 'Shipped' %}
+                                    <span class="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-[8px] font-black uppercase tracking-widest">{{ order.status }}</span>
+                                    {% elif order.status == 'Pending' %}
+                                    <span class="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-[8px] font-black uppercase tracking-widest">{{ order.status }}</span>
+                                    {% else %}
+                                    <span class="px-2 py-0.5 bg-white/10 text-white rounded text-[8px] font-black uppercase tracking-widest">{{ order.status }}</span>
+                                    {% endif %}
+                                </div>
                                 <p class="text-white font-bold">{{ order.created_at|date:"F d, Y @ H:i" }}</p>
+                                {% if order.tracking_number %}
+                                <p class="text-[9px] text-gray-400 font-bold tracking-widest uppercase mt-1">Tracking: <span class="text-white">{{ order.tracking_number }}</span></p>
+                                {% endif %}
                             </div>
-                            <div class="text-center md:text-right">
-                                <p class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Grand Total</p>
-                                <p class="text-2xl font-black">₹{{ order.total_price }}</p>
+                            <div class="text-center md:text-right flex items-center gap-6">
+                                <div>
+                                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Grand Total</p>
+                                    <p class="text-2xl font-black">₹{{ order.total_price }}</p>
+                                </div>
+                                <i class="fas fa-chevron-down text-gray-500 text-xs mt-4"></i>
                             </div>
                         </div>
-                        <div class="p-8 space-y-4">
-                            {% for item in order.items.all %}
-                            <div class="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center p-2 text-red-500/30">
-                                        {% if item.oil.image_url %}
-                                        <img src="{{ item.oil.image_url }}" alt="" class="w-full h-full object-contain">
-                                        {% else %}
-                                        <i class="fas fa-oil-can text-sm"></i>
-                                        {% endif %}
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-black uppercase tracking-tighter">{{ item.quantity }}x {{ item.oil.brand }} {{ item.oil.viscosity }} ({{ item.oil.volume_liters|default:"1.0" }}L)</p>
-                                        <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{{ item.oil.oil_type }}</p>
-                                        <p class="text-[8px] font-bold text-blue-500/70 mt-1">Item Tracking ID: #ORD{{ order.id }}-{{ item.id }}</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-black">₹{{ item.price_at_purchase }}</p>
-                                </div>
+                        <div id="order-details-{{ order.id }}" class="hidden">
+                            <div class="p-8 border-t border-white/5 bg-black/20">
+                                <h4 class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4">Shipping Information</h4>
+                                <p class="text-xs text-white font-bold">{{ order.shipping_name|default:user.get_full_name }}</p>
+                                <p class="text-xs text-gray-400">{{ order.shipping_address|default:"Address not provided" }}</p>
+                                <p class="text-xs text-gray-400">{{ order.shipping_city|default:"" }} - {{ order.shipping_pincode|default:"" }}</p>
+                                <p class="text-xs text-gray-400 mt-1">Ph: {{ order.shipping_phone|default:"N/A" }}</p>
                             </div>
-                            {% endfor %}
+                            <div class="p-8 border-t border-white/5 space-y-4">
+                                <h4 class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4">Order Items</h4>
+                                {% for item in order.items.all %}
+                                <div class="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center p-2 text-red-500/30">
+                                            {% if item.oil.image_url %}
+                                            <img src="{{ item.oil.image_url }}" alt="" class="w-full h-full object-contain">
+                                            {% else %}
+                                            <i class="fas fa-oil-can text-sm"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-black uppercase tracking-tighter">{{ item.quantity }}x {{ item.oil.brand }} {{ item.oil.viscosity }} ({{ item.oil.volume_liters|default:"1.0" }}L)</p>
+                                            <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{{ item.oil.oil_type }}</p>
+                                            <p class="text-[8px] font-bold text-blue-500/70 mt-1">Item Tracking ID: #ORD{{ order.id }}-{{ item.id }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-black">₹{{ item.price_at_purchase }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                     {% endfor %}

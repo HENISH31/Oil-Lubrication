@@ -1,4 +1,4 @@
-{% load static %}
+{% load static shop_extras %}
 <!DOCTYPE html>
 <html lang="en" class="dark">
 
@@ -12,7 +12,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <meta name="theme-color" content="#FF2D2D">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
         /* ══════════════════════════════════════
@@ -32,7 +32,7 @@
             --border-red: rgba(255, 45, 45, 0.18);
             --card-bg: rgba(18, 18, 18, 0.85);
             --glass-bg: rgba(5, 5, 5, 0.75);
-            --font-text: 'Cormorant Garamond', serif;
+            --font-text: 'Inter', sans-serif;
             --font-nums: 'Outfit', sans-serif;
         }
 
@@ -211,7 +211,7 @@
            LOGO
         ══════════════════════════════════════ */
         .logo-text {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Inter', sans-serif;
             font-weight: 900;
             font-style: italic;
             font-size: 26px;
@@ -224,7 +224,7 @@
         ══════════════════════════════════════ */
         .nav-link {
             position: relative;
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Inter', sans-serif;
             font-size: 13px;
             font-weight: 700;
             letter-spacing: 0.15em;
@@ -285,7 +285,7 @@
             padding: 10px 22px;
             background: var(--accent);
             color: #fff;
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Inter', sans-serif;
             font-size: 13px;
             font-weight: 700;
             letter-spacing: 0.15em;
@@ -345,7 +345,7 @@
             padding: 10px 22px;
             background: transparent;
             color: #888;
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Inter', sans-serif;
             font-size: 13px;
             font-weight: 700;
             letter-spacing: 0.15em;
@@ -369,7 +369,7 @@
             align-items: center;
             gap: 12px;
             color: #666;
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Inter', sans-serif;
             font-size: 12px;
             font-weight: 700;
             letter-spacing: 0.2em;
@@ -407,7 +407,7 @@
         .cssbuttons-io-button {
             background: var(--accent);
             color: white;
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Inter', sans-serif;
             padding: 0.3em 0.3em 0.3em 1.1em;
             font-size: 12px;
             font-weight: 800;
@@ -472,7 +472,7 @@
             border: none;
             border-radius: 9999px;
             padding: 1rem 2.2rem;
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Inter', sans-serif;
             font-weight: 900;
             font-size: 1.1rem;
             color: #fff;
@@ -593,7 +593,7 @@
             line-height: 1.6;
             text-align: center;
             text-transform: uppercase;
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Inter', sans-serif;
             letter-spacing: 0.12em;
         }
 
@@ -617,7 +617,7 @@
             background: var(--accent-dim);
             border: 1px solid var(--border-red);
             border-radius: 20px;
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Inter', sans-serif;
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.1em;
@@ -881,8 +881,8 @@
         class="{% block site_wrapper_class %}site-content-wrapper{% endblock %} min-h-screen flex flex-col">
 
         <!-- NAVIGATION -->
-        <nav class="fixed top-0 w-full z-50 glass">
-            <div class="max-w-7xl mx-auto px-6 h-[68px] flex items-center justify-between gap-6">
+        <nav class="fixed top-0 w-full z-[9999] glass !overflow-visible">
+            <div class="max-w-7xl mx-auto px-6 h-[68px] flex items-center justify-between gap-6 !overflow-visible">
 
                 <!-- Logo -->
                 <a href="{% url 'home' %}" class="flex items-center gap-3 group flex-shrink-0">
@@ -901,6 +901,9 @@
                     <a href="{% url 'shop_page' %}" class="nav-link">Shop</a>
                     <a href="{% url 'service_locator' %}" class="nav-link">Locator</a>
                     <a href="{% url 'academy' %}" class="nav-link">Academy</a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'ai_dashboard' %}" class="nav-link text-red-500 font-bold border border-red-500/20 px-3 py-1 rounded-full text-[10px]">AI Training Center</a>
+                    {% endif %}
                 </div>
 
                 <!-- Right side -->
@@ -927,7 +930,7 @@
 
                     <!-- Profile button + dropdown -->
                     <div class="relative">
-                        <button onclick="toggleProfileDropdown()"
+                        <button onclick="toggleProfileDropdown(event)"
                             class="flex items-center gap-2 group focus:outline-none">
                             <div class="w-9 h-9 rounded-full flex items-center justify-center border border-white/10 group-hover:border-red-500/40 transition-all shadow-lg overflow-hidden"
                                 style="background:linear-gradient(135deg,#b91c1c,#7f1d1d);">
@@ -938,7 +941,7 @@
                         </button>
 
                         <div id="profile-dropdown"
-                            class="hidden absolute right-0 mt-3 w-[280px] dropdown-glass p-5 animate-scale-in">
+                            class="hidden absolute right-0 mt-3 w-[280px] dropdown-glass p-5 animate-scale-in z-[10000]">
                             <!-- Header -->
                             <div class="flex items-center gap-3 pb-4 mb-4 border-b border-white/5">
                                 <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -948,7 +951,7 @@
                                 <div class="min-w-0 flex-1">
                                     <p class="text-white text-sm font-bold truncate leading-tight">
                                         {% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{
-                                        user.username|capfirst }}{% endif %}
+                                        user.email|username_from_email|capfirst }}{% endif %}
                                     </p>
                                     <p class="text-[10px] text-gray-600 truncate mt-0.5">{{ user.email }}</p>
                                     {% if user.profile.tagline %}
@@ -1043,6 +1046,9 @@
                     class="nav-link text-lg">Recommender</a>
                 <a href="{% url 'service_locator' %}" onclick="toggleMenu()" class="nav-link text-lg">Locator</a>
                 <a href="{% url 'academy' %}" onclick="toggleMenu()" class="nav-link text-lg">Academy</a>
+                {% if user.is_staff %}
+                <a href="{% url 'ai_dashboard' %}" onclick="toggleMenu()" class="nav-link text-lg text-red-500">AI Dashboard</a>
+                {% endif %}
                 <a href="{% url 'shop_page' %}" onclick="toggleMenu()" class="nav-link text-lg">Shop</a>
             </div>
             {% if user.is_authenticated %}
@@ -1238,13 +1244,16 @@
         });
 
         /* ── Profile dropdown ── */
-        function toggleProfileDropdown() {
+        function toggleProfileDropdown(event) {
+            if (event) event.stopPropagation();
             document.getElementById('profile-dropdown').classList.toggle('hidden');
         }
         window.addEventListener('click', e => {
             const d = document.getElementById('profile-dropdown');
-            if (d && !d.contains(e.target) && !d.previousElementSibling?.contains(e.target))
+            const btn = document.querySelector('button[onclick*="toggleProfileDropdown"]');
+            if (d && !d.classList.contains('hidden') && !d.contains(e.target) && !btn.contains(e.target)) {
                 d.classList.add('hidden');
+            }
         });
 
         /* ── Mobile menu ── */

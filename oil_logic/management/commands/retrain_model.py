@@ -6,6 +6,10 @@ from django.conf import settings
 from oil_logic.models import Oil, VehicleQuery, RecommendationFeedback
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, top_k_accuracy_score
+import numpy as np
+import json
 
 class Command(BaseCommand):
     help = 'Retrains the AI Oil Recommendation model'
@@ -43,9 +47,34 @@ class Command(BaseCommand):
         numeric_cols = ['year', 'displacement_cc', 'odometer_km']
         X[numeric_cols] = scaler.fit_transform(X[numeric_cols])
 
+        # Split data for evaluation (Use stratification to ensure all classes are in both sets)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
         # Train model
         model = RandomForestClassifier(n_estimators=100, random_state=42)
-        model.fit(X, y)
+        model.fit(X_train, y_train)
+
+        # Evaluate
+        y_pred = model.predict(X_test)
+        y_proba = model.predict_proba(X_test)
+        
+        # Top-k accuracy (Top 3)
+        try:
+            top_3_acc = top_k_accuracy_score(y_test, y_proba, k=3, labels=model.classes_)
+        except Exception as e:
+            self.stdout.write(self.style.WARNING(f"Top-3 calculation error: {e}"))
+            top_3_acc = accuracy_score(y_test, y_pred)
+
+        metrics = {
+            'accuracy': accuracy_score(y_test, y_pred),
+            'top_3_accuracy': top_3_acc,
+            'precision': precision_score(y_test, y_pred, average='weighted', zero_division=0),
+            'recall': recall_score(y_test, y_pred, average='weighted', zero_division=0),
+            'f1': f1_score(y_test, y_pred, average='weighted', zero_division=0),
+            'sample_size': len(data),
+            'timestamp': pd.Timestamp.now().isoformat(),
+            'feature_importance': dict(zip(X.columns, model.feature_importances_.tolist()))
+        }
 
         # Save model and artifacts
         model_dir = os.path.join(settings.BASE_DIR, 'ml_models')
@@ -55,6 +84,9 @@ class Command(BaseCommand):
         joblib.dump(model, os.path.join(model_dir, 'oil_recommender.joblib'))
         joblib.dump(scaler, os.path.join(model_dir, 'scaler.joblib'))
         joblib.dump(encoders, os.path.join(model_dir, 'encoders.joblib'))
+        
+        with open(os.path.join(model_dir, 'metrics.json'), 'w') as f:
+            json.dump(metrics, f, indent=4)
 
         self.stdout.write(self.style.SUCCESS("Successfully retrained model and saved to ml_models/"))
 
@@ -93,20 +125,29 @@ class Command(BaseCommand):
             self.stdout.write("Not enough vehicles or oils to seed.")
             return
 
+        import random
+        driving_conditions = ['City', 'Highway', 'Off-road', 'Mixed']
+        mileage_ranges = [5000, 25000, 75000, 125000, 175000]
+
         for vehicle in vehicles:
-            # Create a query
-            query = VehicleQuery.objects.create(
-                brand=vehicle.brand,
-                model=vehicle.model,
-                year=vehicle.year,
-                engine_type=vehicle.engine_type,
-                displacement_cc=vehicle.displacement_cc,
-                odometer_km=10000,
-                driving_condition='Mixed'
-            )
-            
-            # Use the vehicle's recommended oil as the gold standard for initial training
-            if vehicle.recommended_oil:
+            # Create multiple variants per vehicle to show how conditions change the recommendation
+            for _ in range(2):
+                cond = random.choice(driving_conditions)
+                odo = random.choice(mileage_ranges)
+                
+                # Create a query
+                query = VehicleQuery.objects.create(
+                    brand=vehicle.brand,
+                    model=vehicle.model,
+                    year=vehicle.year,
+                    engine_type=vehicle.engine_type,
+                    displacement_cc=vehicle.displacement_cc,
+                    odometer_km=odo,
+                    driving_condition=cond
+                )
+                
+                # Use a slightly shifted logic for synthetic ground truth if needed, 
+                # or just use the recommended oil as base.
                 RecommendationFeedback.objects.create(
                     query=query,
                     recommended_oil=vehicle.recommended_oil,
@@ -114,4 +155,4 @@ class Command(BaseCommand):
                     is_helpful=True,
                     rating=5
                 )
-        self.stdout.write(f"Created {vehicles.count()} synthetic training samples.")
+        self.stdout.write(f"Created {vehicles.count() * 2} synthetic training samples with variance.")

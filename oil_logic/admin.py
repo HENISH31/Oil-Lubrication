@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Oil, OilVariant, Vehicle, Maintenance, UserProfile, CartItem, Order, OrderItem, VehicleRegistration, ServiceRecord, VehicleQuery, RecommendationFeedback
+from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import Oil, OilVariant, Vehicle, Maintenance, UserProfile, CartItem, Order, OrderItem, VehicleRegistration, ServiceRecord, VehicleQuery, RecommendationFeedback, PromoCode, ShippingZone, ProductReview
 from .utils import update_oil_prices_logic
 
 @admin.register(VehicleQuery)
@@ -70,3 +72,87 @@ class VehicleRegistrationAdmin(admin.ModelAdmin):
     list_filter = ('vehicle__brand', 'vehicle__vehicle_type')
 
 admin.site.register(VehicleRegistration, VehicleRegistrationAdmin)
+
+# --- New Admin Features ---
+
+class OrderInline(admin.TabularInline):
+    model = Order
+    extra = 0
+    show_change_link = True
+    fields = ('id', 'total_price', 'status', 'is_paid', 'created_at')
+    readonly_fields = ('created_at',)
+
+class MaintenanceInline(admin.TabularInline):
+    model = Maintenance
+    extra = 0
+    show_change_link = True
+    fields = ('vehicle', 'last_oil_change_km', 'next_due_km', 'next_due_date')
+
+class UserProfileInline(admin.StackedInline):
+    model = UserProfile
+    can_delete = False
+    verbose_name_plural = 'Profile Info'
+
+class CustomUserAdmin(BaseUserAdmin):
+    inlines = [UserProfileInline, OrderInline, MaintenanceInline]
+
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
+
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'total_price', 'status', 'is_paid', 'created_at')
+    list_filter = ('status', 'is_paid', 'created_at')
+    search_fields = ('user__username', 'tracking_number', 'shipping_name', 'shipping_phone')
+    inlines = [OrderItemInline]
+    
+    fieldsets = (
+        ('Order Info', {
+            'fields': ('user', 'total_price', 'is_paid', 'status', 'tracking_number')
+        }),
+        ('Shipping Details', {
+            'fields': ('shipping_name', 'shipping_phone', 'shipping_address', 'shipping_city', 'shipping_pincode')
+        }),
+    )
+    actions = ['mark_as_shipped', 'mark_as_delivered', 'print_invoice']
+
+    def mark_as_shipped(self, request, queryset):
+        queryset.update(status='Shipped')
+        self.message_user(request, "Selected orders marked as Shipped.")
+    mark_as_shipped.short_description = "Mark selected orders as Shipped"
+    
+    def mark_as_delivered(self, request, queryset):
+        queryset.update(status='Delivered')
+        self.message_user(request, "Selected orders marked as Delivered.")
+    mark_as_delivered.short_description = "Mark selected orders as Delivered"
+
+    def print_invoice(self, request, queryset):
+        self.message_user(request, f"Generated invoices for {queryset.count()} orders (Simulated).")
+    print_invoice.short_description = "Print Invoices for selected orders"
+
+@admin.register(PromoCode)
+class PromoCodeAdmin(admin.ModelAdmin):
+    list_display = ('code', 'discount_type', 'discount_value', 'valid_from', 'valid_to', 'active')
+    list_filter = ('active', 'discount_type')
+    search_fields = ('code',)
+
+@admin.register(ShippingZone)
+class ShippingZoneAdmin(admin.ModelAdmin):
+    list_display = ('name', 'delivery_cost', 'active')
+    list_filter = ('active',)
+    search_fields = ('name',)
+
+@admin.register(ProductReview)
+class ProductReviewAdmin(admin.ModelAdmin):
+    list_display = ('user', 'oil', 'rating', 'is_approved', 'created_at')
+    list_filter = ('is_approved', 'rating', 'created_at')
+    actions = ['approve_reviews']
+
+    def approve_reviews(self, request, queryset):
+        queryset.update(is_approved=True)
+        self.message_user(request, "Selected reviews approved.")
+    approve_reviews.short_description = "Approve selected reviews"

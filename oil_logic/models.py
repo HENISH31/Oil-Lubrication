@@ -34,6 +34,12 @@ class Oil(models.Model):
     volume_1L_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Price for 1L")
     volume_4L_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Price for 4L", blank=True, null=True)
     volume_5L_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Price for 5L", blank=True, null=True)
+    
+    # New fields for Dynamic Pricing
+    sale_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Discounted sale price")
+    sale_start_date = models.DateField(blank=True, null=True)
+    sale_end_date = models.DateField(blank=True, null=True)
+    
     image_url = models.URLField(max_length=500, blank=True, null=True)
     image = models.ImageField(upload_to='oils/', blank=True, null=True)
     description = models.TextField(blank=True, null=True)
@@ -217,6 +223,17 @@ class UserProfile(models.Model):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     tagline = models.CharField(max_length=255, blank=True, null=True, help_text="A short tagline to display on your profile.")
     
+    # Referral System
+    referral_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    referred_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='referrals')
+    wallet_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def save(self, *args, **kwargs):
+        if not self.referral_code:
+            import uuid
+            self.referral_code = str(uuid.uuid4())[:8].upper()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Profile for {self.user.username}"
 
@@ -232,10 +249,26 @@ class CartItem(models.Model):
         return self.price * self.quantity
 
 class Order(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Processing', 'Processing'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+        ('Cancelled', 'Cancelled'),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     created_at = models.DateTimeField(auto_now_add=True)
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
     is_paid = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    tracking_number = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Shipping Information
+    shipping_name = models.CharField(max_length=100, blank=True, null=True)
+    shipping_phone = models.CharField(max_length=20, blank=True, null=True)
+    shipping_address = models.TextField(blank=True, null=True)
+    shipping_city = models.CharField(max_length=100, blank=True, null=True)
+    shipping_pincode = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
         return f"Order #{self.id} by {self.user.username}"
@@ -298,3 +331,42 @@ class Garage(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.source})"
+
+class PromoCode(models.Model):
+    DISCOUNT_TYPES = [
+        ('Percentage', 'Percentage'),
+        ('Fixed', 'Fixed Amount'),
+    ]
+    code = models.CharField(max_length=50, unique=True)
+    discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPES, default='Percentage')
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2, help_text="Percentage or Fixed Amount")
+    valid_from = models.DateField()
+    valid_to = models.DateField()
+    active = models.BooleanField(default=True)
+
+    def is_valid(self):
+        from django.utils import timezone
+        now = timezone.now().date()
+        return self.active and self.valid_from <= now <= self.valid_to
+
+    def __str__(self):
+        return f"{self.code} - {self.discount_value} {self.discount_type}"
+
+class ShippingZone(models.Model):
+    name = models.CharField(max_length=100)
+    delivery_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.name} - ₹{self.delivery_cost}"
+
+class ProductReview(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    oil = models.ForeignKey(Oil, on_delete=models.CASCADE, related_name='product_reviews')
+    rating = models.IntegerField(default=5) # 1 to 5
+    comment = models.TextField(blank=True, null=True)
+    is_approved = models.BooleanField(default=False) # Requires admin approval
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review by {self.user.username} for {self.oil.brand}"
