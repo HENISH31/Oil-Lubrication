@@ -1,3 +1,6 @@
+# Author: HENISHRANA
+# This handles all the database tables for the oil system
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -143,8 +146,58 @@ class Maintenance(models.Model):
 
     @property
     def is_overdue(self):
-        # This would ideally be checked against current KM/Date in the view logic
-        return False
+        return self.current_km >= self.next_due_km or timezone.now().date() >= self.next_due_date
+
+    @property
+    def oil_health_score(self):
+        # doing this for now to calculate score based on conditions
+        # this might break if total_interval is somehow 0
+        total_interval = self.next_due_km - self.last_oil_change_km
+        if total_interval <= 0: return 0
+        
+        consumed = self.current_km - self.last_oil_change_km
+        
+        multipliers = {
+            'City': 1.2,     # degrades faster in traffic
+            'Off-road': 1.5,
+            'Highway': 0.8,  # good condition
+            'Mixed': 1.0
+        }
+        # get penalty or default to 1.0
+        penalty = multipliers.get(self.driving_condition, 1.0)
+        
+        temp_score = 100 - (consumed * penalty / total_interval * 100)
+        
+        if temp_score < 0:
+            temp_score = 0
+        elif temp_score > 100:
+            temp_score = 100
+            
+        return round(temp_score)
+
+    def predict_service_date(self):
+        # TODO: check if this is correct for all cars
+        # simple 20km/day average fallback
+        km_per_day = 20.0
+        
+        records = self.service_records.order_by('date')
+        all_records = list(records) # convert to list to count
+        
+        if len(all_records) >= 2:
+            first = all_records[0]
+            last = all_records[-1]
+            days = (last.date - first.date).days
+            if days > 0:
+                km_per_day = max(5.0, (last.km - first.km) / days)
+        
+        # print("km per day is", km_per_day) # debug 
+        km_remaining = self.next_due_km - self.current_km
+        
+        if km_remaining <= 0:
+            return timezone.now().date()
+            
+        days_to_service = km_remaining / km_per_day
+        return timezone.now().date() + timedelta(days=int(days_to_service))
 
     def __str__(self):
         return f"Maintenance for {self.vehicle} by {self.user.username}"

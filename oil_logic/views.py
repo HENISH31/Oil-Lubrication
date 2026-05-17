@@ -1,7 +1,10 @@
+# Author: HENISHRANA
+# Main views for oil logic
 from rest_framework import viewsets, generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 import razorpay
+import os
 from django.utils import timezone
 from .models import Oil, Vehicle, Maintenance, UserProfile, CartItem, Order, OrderItem, VehicleRegistration, ServiceRecord, VehicleQuery, RecommendationFeedback
 from .ai_engine import AIOilRecommender
@@ -14,11 +17,11 @@ from .services import VehicleLookupService, AIAgentService, GarageLocatorService
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 
 import json
 import requests
 from django.conf import settings
-import razorpay
 from django.views.decorators.csrf import csrf_exempt
 def home(request):
     return render(request, 'oil_logic/index.html')
@@ -125,16 +128,18 @@ def dashboard(request):
     
     avg_oil_life = 0
     if total_vehicles > 0:
-        total_life = 0
+        totalLife = 0
         for record in maintenance_records:
-            total_interval = record.next_due_km - record.last_oil_change_km
-            if total_interval > 0:
+            # print(record.id) # checking if record comes
+            totalInterval = record.next_due_km - record.last_oil_change_km
+            if totalInterval > 0:
                 consumed = record.current_km - record.last_oil_change_km
-                life = max(0, min(100, 100 - (consumed / total_interval * 100)))
-                total_life += life
+                # simple life calc
+                life = max(0, min(100, 100 - (consumed / totalInterval * 100)))
+                totalLife += life
             else:
-                total_life += 100
-        avg_oil_life = total_life / total_vehicles
+                totalLife += 100
+        avg_oil_life = totalLife / total_vehicles
 
     # Expert Tips (Serialized for JS)
     expert_tips_list = [
@@ -149,15 +154,12 @@ def dashboard(request):
     records_data = []
     for r in maintenance_records:
         r_data = MaintenanceSerializer(r).data
-        # Add calculated fields for frontend
-        total_interval = r.next_due_km - r.last_oil_change_km
-        if total_interval > 0:
-            consumed = r.current_km - r.last_oil_change_km
-            r_data['oil_life'] = max(0, min(100, 100 - (consumed / total_interval * 100)))
-            r_data['remaining_km'] = max(0, r.next_due_km - r.current_km)
-        else:
-            r_data['oil_life'] = 100
-            r_data['remaining_km'] = 5000 # default
+        # Industrial Predictive Analytics
+        r_data['oil_life'] = r.oil_health_score
+        r_data['remaining_km'] = max(0, r.next_due_km - r.current_km)
+        r_data['predicted_date'] = r.predict_service_date().isoformat()
+        r_data['is_overdue'] = r.is_overdue
+        
         records_data.append(r_data)
         
     records_json = json.dumps(records_data)
@@ -190,35 +192,34 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
 
-    def _get_contextual_oil_data(self, request, oil, vehicle_type, capacity):
-        """Helper to inject rec_price and rec_volume into oil data"""
+    def getContextualOilData(self, request, oil, vehicle_type, capacity):
+        # Helper to inject prices
         if not oil: return None
         
         # Determine recommended volume
-        rec_vol = 1.0 # Default (Bikes)
+        recVol = 1.0 # Default (Bikes)
         if vehicle_type == 'Car':
-            rec_vol = 4.0
+            recVol = 4.0
             if capacity and capacity > 4.0:
-                rec_vol = 5.0
+                recVol = 5.0
         
         # Determine price based on user rules
-        # Use prices from the first matching oil if possible, otherwise use global defaults
         sample_oil = oil or Oil.objects.first()
         if sample_oil:
-            price_map = {
+            priceMap = {
                 1.0: float(sample_oil.volume_1L_price),
                 4.0: float(sample_oil.volume_4L_price),
                 5.0: float(sample_oil.volume_5L_price)
             }
         else:
-            price_map = {1.0: 850.00, 4.0: 3200.00, 5.0: 3900.00}
+            priceMap = {1.0: 850.00, 4.0: 3200.00, 5.0: 3900.00}
         
-        rec_price = price_map.get(rec_vol, 850.00)
+        recPrice = priceMap.get(recVol, 850.00)
         
         # Serialize and inject
         data = OilSerializer(oil, context={'request': request}).data
-        data['rec_price'] = rec_price
-        data['rec_volume'] = rec_vol
+        data['rec_price'] = recPrice
+        data['rec_volume'] = recVol
         return data
 
     @action(detail=False, methods=['get'])
@@ -315,9 +316,9 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
                     'displacement_cc': 'Unknown',
                     'variant_name': 'AI Synthesis',
                     'recommendations': {
-                        'primary': self._get_contextual_oil_data(request, primary_oil, vehicle_type, 2.0),
-                        'premium': self._get_contextual_oil_data(request, premium_oil, vehicle_type, 2.0),
-                        'economy': self._get_contextual_oil_data(request, economy_oil, vehicle_type, 2.0),
+                        'primary': self.getContextualOilData(request, primary_oil, vehicle_type, 2.0),
+                        'premium': self.getContextualOilData(request, premium_oil, vehicle_type, 2.0),
+                        'economy': self.getContextualOilData(request, economy_oil, vehicle_type, 2.0),
                     }
                 }
                 return Response([virtual_v])
@@ -398,9 +399,9 @@ class VehicleViewSet(viewsets.ReadOnlyModelViewSet):
             economy = primary
 
         return {
-            'primary': self._get_contextual_oil_data(request, primary, vehicle.vehicle_type, vehicle.oil_capacity),
-            'premium': self._get_contextual_oil_data(request, premium, vehicle.vehicle_type, vehicle.oil_capacity),
-            'economy': self._get_contextual_oil_data(request, economy, vehicle.vehicle_type, vehicle.oil_capacity),
+            'primary': self.getContextualOilData(request, primary, vehicle.vehicle_type, vehicle.oil_capacity),
+            'premium': self.getContextualOilData(request, premium, vehicle.vehicle_type, vehicle.oil_capacity),
+            'economy': self.getContextualOilData(request, economy, vehicle.vehicle_type, vehicle.oil_capacity),
         }
 
 class MaintenanceViewSet(viewsets.ModelViewSet):
@@ -724,6 +725,7 @@ class AIRecommendationView(generics.GenericAPIView):
         # Hybrid Fallback Logic
         use_ai = recommender.is_available() and confidence > 0.6
         explanation = ""
+        ai_verdict = ""
         
         if use_ai:
             primary_oil = Oil.objects.filter(id=oil_id).first()
@@ -731,27 +733,34 @@ class AIRecommendationView(generics.GenericAPIView):
                 alternatives = recommender.predict_with_alternatives(data, top_n=3)
                 alternative_oils = Oil.objects.filter(id__in=[a['oil_id'] for a in alternatives])
                 explanation = recommender.get_explanation(data, primary_oil)
+                # LLM Consultation
+                oil_ctx = {"brand": primary_oil.brand, "viscosity": primary_oil.viscosity, "oil_type": primary_oil.oil_type}
+                ai_verdict = AIAgentService.analyze_recommendation(data, oil_ctx)
             else:
-                use_ai = False # Force fallback if AI returned non-existent ID
+                use_ai = False 
         else:
-            # Fallback to rule-based logic (borrowed from existing implementation)
+            # Fallback to rule-based logic
             vehicles = Vehicle.objects.filter(brand__iexact=brand, model__iexact=model, year=year)
             if vehicles.exists():
                 v = vehicles.first()
                 primary_oil = v.recommended_oil
                 alternative_oils = Oil.objects.filter(viscosity=primary_oil.viscosity).exclude(id=primary_oil.id)[:2] if primary_oil else []
-                explanation = "Our rule-based system matched your vehicle specifications with the manufacturer's recommended viscosity."
+                explanation = "Matched with manufacturer specs."
+                if primary_oil:
+                    oil_ctx = {"brand": primary_oil.brand, "viscosity": primary_oil.viscosity, "oil_type": primary_oil.oil_type}
+                    ai_verdict = AIAgentService.analyze_recommendation(data, oil_ctx)
             else:
                 primary_oil = Oil.objects.order_by('-rating').first()
                 alternative_oils = []
-                explanation = "We couldn't find your specific vehicle, so we're recommending our top-rated versatile oil."
+                explanation = "Top-rated versatile oil recommendation."
+                ai_verdict = "General-purpose high-performance oil suitable for most modern engines."
 
         # Log initial recommendation
         if primary_oil:
             RecommendationFeedback.objects.create(
                 query=query,
                 recommended_oil=primary_oil,
-                is_helpful=True # Default until user says otherwise
+                is_helpful=True
             )
 
         return Response({
@@ -759,7 +768,8 @@ class AIRecommendationView(generics.GenericAPIView):
             "recommendation": OilSerializer(primary_oil, context={'request': request}).data if primary_oil else None,
             "alternatives": OilSerializer(alternative_oils, many=True, context={'request': request}).data,
             "explanation": explanation,
-            "system": "AI" if use_ai else "Rule-based",
+            "ai_verdict": ai_verdict,
+            "system": "AI (Hybrid)" if use_ai else "Rule-based + Expert AI",
             "confidence": round(confidence, 2)
         })
 
@@ -799,4 +809,32 @@ def search_garages(request):
     return JsonResponse({
         'status': 'success',
         'results': results
+    })
+
+@staff_member_required
+def ai_dashboard(request):
+    return render(request, 'oil_logic/ai_dashboard.html')
+
+@staff_member_required
+def get_model_metrics(request):
+    import json
+    metrics_path = os.path.join(settings.BASE_DIR, 'ml_models', 'metrics.json')
+    if os.path.exists(metrics_path):
+        with open(metrics_path, 'r') as f:
+            data = json.load(f)
+        return JsonResponse(data)
+    return JsonResponse({'error': 'Metrics not found'}, status=404)
+
+@staff_member_required
+def get_dataset_stats(request):
+    from django.db.models import Count
+    # Feedback distribution
+    feedbacks = RecommendationFeedback.objects.filter(is_helpful=True)
+    brand_dist = feedbacks.values('query__brand').annotate(count=Count('id')).order_by('-count')[:10]
+    oil_dist = feedbacks.values('recommended_oil__brand', 'recommended_oil__viscosity').annotate(count=Count('id')).order_by('-count')[:10]
+    
+    return JsonResponse({
+        'brand_distribution': list(brand_dist),
+        'oil_distribution': list(oil_dist),
+        'total_samples': feedbacks.count()
     })

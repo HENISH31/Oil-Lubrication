@@ -24,7 +24,9 @@ async function handleChatSubmit(event) {
 
     // Add User Message
     addMessage(message, 'user');
-    input.value = '';
+    document.getElementById('chat-input').value = ''; // clears the input
+
+    // console.log("User sent:", message);
 
     // Add Loading State
     const loadingId = 'loading-' + Date.now();
@@ -42,6 +44,8 @@ async function handleChatSubmit(event) {
 
         const data = await response.json();
         removeLoadingMessage(loadingId);
+        // I struggled with this API for two days but it finally works
+        // console.log(data);
 
         if (data.status === 'success') {
             addMessage(data.response, 'bot');
@@ -56,6 +60,7 @@ async function handleChatSubmit(event) {
 }
 
 function addMessage(text, sender) {
+    // get container
     const container = document.getElementById('chat-messages');
     const div = document.createElement('div');
     div.className = 'flex gap-3 ' + (sender === 'user' ? 'flex-row-reverse' : '');
@@ -76,8 +81,9 @@ function addMessage(text, sender) {
         </div>
     `;
 
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
+    // adding it to the DOM
+    document.getElementById('chat-messages').appendChild(div);
+    document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
 }
 
 function addLoadingMessage(id) {

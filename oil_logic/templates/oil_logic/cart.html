@@ -1,7 +1,15 @@
 {% extends 'oil_logic/base.html' %}
 
 {% block content %}
+<style>
+    /* I couldn't get Tailwind to do exactly what I wanted for the cart border */
+    .cart-custom-border {
+        border-top: 5px solid #ef4444;
+    }
+</style>
 <section class="max-w-4xl mx-auto px-6 py-12">
+    <!-- user must be logged in for cart but just double checking here -->
+    {% if user.is_authenticated %}
     <div class="mb-12">
         <h2 class="text-xs font-black uppercase tracking-[0.4em] text-red-500 mb-2">Your Selection</h2>
         <h1 class="text-5xl font-black uppercase tracking-tighter">Shopping <span class="text-red-500">Cart</span></h1>
@@ -10,6 +18,7 @@
     {% if cart_items %}
     <div class="space-y-6">
         {% for item in cart_items %}
+        <!-- tried to make this grid but it broke on mobile so kept flex -->
         <div class="glass-premium p-8 rounded-3xl flex flex-col md:flex-row items-center gap-8 group">
             <!-- Product Image -->
             <div class="w-24 h-24 flex-shrink-0 bg-white/5 rounded-2xl p-4 flex items-center justify-center">
@@ -48,7 +57,7 @@
 
         <!-- Order Summary -->
         <div
-            class="glass-premium p-10 rounded-[3rem] mt-12 flex flex-col md:flex-row items-center justify-between gap-8 border-t-4 border-red-500">
+            class="glass-premium p-10 rounded-[3rem] mt-12 flex flex-col md:flex-row items-center justify-between gap-8 cart-custom-border">
             <div class="space-y-1 text-center md:text-left">
                 <p class="text-xs font-black uppercase tracking-widest text-gray-500">Total Amount</p>
                 <h2 class="text-5xl font-black text-white">₹{{ total }}</h2>
@@ -78,6 +87,7 @@
             </a>
         </div>
     </div>
+    {% endif %}
     {% endif %}
 </section>
 {% endblock %}
